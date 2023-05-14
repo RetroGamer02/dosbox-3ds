@@ -299,7 +299,7 @@ public:
 			_esp=mem_readd(where);
 			_ss=mem_readw(where+4);
 		} else {
-			PhysPt where=base+offsetof(TSS_16,sp0)+level*4;
+			PhysPt where=base+offsetof(TSS_16,sp0)+level<<2;
 			_esp=mem_readw(where);
 			_ss=mem_readw(where+2);
 		}
@@ -527,7 +527,7 @@ bool CPU_IO_Exception(Bitu port,Bitu size) {
 		PhysPt bwhere=cpu_tss.base+0x66;
 		Bitu ofs=mem_readw(bwhere);
 		if (ofs>cpu_tss.limit) goto doexception;
-		bwhere=cpu_tss.base+ofs+(port/8);
+		bwhere=cpu_tss.base+ofs+(port>>3);
 		Bitu map=mem_readw(bwhere);
 		Bitu mask=(0xffff>>(16-size)) << (port&7);
 		if (map & mask) goto doexception;
@@ -1208,10 +1208,10 @@ call_code:
 						if (call.saved.gate.paramcount&31) {
 							if (call.Type()==DESC_386_CALL_GATE) {
 								for (Bits i=(call.saved.gate.paramcount&31)-1;i>=0;i--) 
-									mem_readd(o_stack+i*4);
+									mem_readd(o_stack+i<<2);
 							} else {
 								for (Bits i=(call.saved.gate.paramcount&31)-1;i>=0;i--)
-									mem_readw(o_stack+i*2);
+									mem_readw((o_stack+i)<<1);
 							}
 						}
 
@@ -1244,7 +1244,7 @@ call_code:
 							CPU_Push32(o_esp);
 							if (call.saved.gate.paramcount&31)
 								for (Bits i=(call.saved.gate.paramcount&31)-1;i>=0;i--) 
-									CPU_Push32(mem_readd(o_stack+i*4));
+									CPU_Push32(mem_readd(o_stack+(i<<2)));
 							CPU_Push32(oldcs);
 							CPU_Push32(oldeip);
 						} else {
@@ -1252,7 +1252,7 @@ call_code:
 							CPU_Push16(o_esp);
 							if (call.saved.gate.paramcount&31)
 								for (Bits i=(call.saved.gate.paramcount&31)-1;i>=0;i--)
-									CPU_Push16(mem_readw(o_stack+i*2));
+									CPU_Push16(mem_readw((o_stack+i)<<1));
 							CPU_Push16(oldcs);
 							CPU_Push16(oldeip);
 						}

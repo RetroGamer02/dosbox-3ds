@@ -648,10 +648,10 @@ void CALLBACK_Init(Section* /*sec*/) {
 
 	/* Only setup default handler for first part of interrupt table */
 	for (Bit16u ct=0;ct<0x60;ct++) {
-		real_writed(0,ct*4,CALLBACK_RealPointer(call_default));
+		real_writed(0,ct<<2,CALLBACK_RealPointer(call_default));
 	}
 	for (Bit16u ct=0x68;ct<0x70;ct++) {
-		real_writed(0,ct*4,CALLBACK_RealPointer(call_default));
+		real_writed(0,ct<<2,CALLBACK_RealPointer(call_default));
 	}
 	/* Setup block of 0xCD 0xxx instructions */
 	PhysPt rint_base=CALLBACK_GetBase()+CB_MAX*CB_SIZE;
@@ -665,11 +665,11 @@ void CALLBACK_Init(Section* /*sec*/) {
 
 	}
 	// setup a few interrupt handlers that point to bios IRETs by default
-	real_writed(0,0x66*4,CALLBACK_RealPointer(call_default));	//war2d
-	real_writed(0,0x67*4,CALLBACK_RealPointer(call_default));
-	if (machine==MCH_CGA) real_writed(0,0x68*4,0);				//Popcorn
-	real_writed(0,0x5c*4,CALLBACK_RealPointer(call_default));	//Network stuff
-	//real_writed(0,0xf*4,0); some games don't like it
+	real_writed(0,0x66<<2,CALLBACK_RealPointer(call_default));	//war2d
+	real_writed(0,0x67<<2,CALLBACK_RealPointer(call_default));
+	if (machine==MCH_CGA) real_writed(0,0x68<<2,0);				//Popcorn
+	real_writed(0,0x5c<<2,CALLBACK_RealPointer(call_default));	//Network stuff
+	//real_writed(0,0xf<<2,0); some games don't like it
 
 	call_priv_io=CALLBACK_Allocate();
 

@@ -405,7 +405,7 @@ bool DOS_PSP::SetNumFiles(Bit16u fileNum) {
 	if (fileNum > 20 && ((fileNum+2) > sGet(sPSP,max_files))) {
 		// Allocate needed paragraphs
 		fileNum+=2;	// Add a few more files for safety
-		Bit16u para = (fileNum/16)+((fileNum%16)>0);
+		Bit16u para = (fileNum>>4)+((fileNum%16)>0);
 		RealPt data	= RealMake(DOS_GetMemory(para),0);
 		for (Bit16u i=0; i<fileNum; i++) mem_writeb(Real2Phys(data)+i,(i<20)?GetFileHandle(i):0xFF);
 #if defined(__3DS__)

@@ -646,7 +646,7 @@ static void DSP_DoDMATransfer(DMA_MODES mode,Bitu freq,bool autoinit, bool stere
 	switch (mode) {
 	case DSP_DMA_2:
 		type="2-bits ADPCM";
-		sb.dma.mul=(1 << SB_SH)/4;
+		sb.dma.mul=(1 << SB_SH)>>2;
 		break;
 	case DSP_DMA_3:
 		type="3-bits ADPCM";
@@ -654,7 +654,7 @@ static void DSP_DoDMATransfer(DMA_MODES mode,Bitu freq,bool autoinit, bool stere
 		break;
 	case DSP_DMA_4:
 		type="4-bits ADPCM";
-		sb.dma.mul=(1 << SB_SH)/2;
+		sb.dma.mul=(1 << SB_SH)>>1;
 		break;
 	case DSP_DMA_8:
 		type="8-bits PCM";
@@ -662,7 +662,7 @@ static void DSP_DoDMATransfer(DMA_MODES mode,Bitu freq,bool autoinit, bool stere
 		break;
 	case DSP_DMA_16_ALIASED:
 		type="16-bits(aliased) PCM";
-		sb.dma.mul=(1 << SB_SH)*2;
+		sb.dma.mul=(1 << SB_SH)<<1;
 		break;
 	case DSP_DMA_16:
 		type="16-bits PCM";
@@ -1236,7 +1236,7 @@ static void CTMIXER_Reset(void) {
 
 static void DSP_ChangeStereo(bool stereo) {
 	if (!sb.dma.stereo && stereo) {
-		sb.chan->SetFreq(sb.freq/2);
+		sb.chan->SetFreq(sb.freq>>1);
 		sb.dma.mul*=2;
 		sb.dma.rate=(sb.freq*sb.dma.mul) >> SB_SH;
 		sb.dma.min=(sb.dma.rate*3)/1000;

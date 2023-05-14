@@ -21,7 +21,7 @@ int drawCharacter(u8* fb, font_s* f, char c, s16 x, s16 y, u16 w, u16 h)
 	s16 cy=y, ch=cd->h, cyo=0;
 	if(y<0){cy=0;cyo=-y;ch=cd->h-cyo;}
 	else if(y+ch>h)ch=h-y;
-	fb+=(x*h+cy)*2;
+	fb+=(x*h+cy)<<1;
 	const u8 r=f->color[0], g=f->color[1], b=f->color[2];
 	for(i=0;i<(cd->w-1);i++)
 	{
@@ -37,7 +37,7 @@ int drawCharacter(u8* fb, font_s* f, char c, s16 x, s16 y, u16 w, u16 h)
 			fb+=2;
 		}
 		charData+=(cd->h-(cyo+ch));
-		fb+=(h-ch)*2;
+		fb+=(h-ch)<<1;
 	}
 	return cd->xa;
 }

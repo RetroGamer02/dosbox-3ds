@@ -109,7 +109,7 @@ static Bit8u * VGA_Draw_CGA16_Line(Bitu vidstart, Bitu line) {
 static Bit8u * VGA_Draw_4BPP_Line(Bitu vidstart, Bitu line) {
 	const Bit8u *base = vga.tandy.draw_base + ((line & vga.tandy.line_mask) << vga.tandy.line_shift);
 	Bit8u* draw=TempLine;
-	Bitu end = vga.draw.blocks*2;
+	Bitu end = vga.draw.blocks<<1;
 	while(end) {
 		Bit8u byte = base[vidstart & vga.tandy.addr_mask];
 		*draw++=vga.attr.palette[byte >> 4];
@@ -296,7 +296,7 @@ static Bit8u * VGA_Draw_LIN16_Line_HWMouse(Bitu vidstart, Bitu /*line*/) {
 		(lineat > (vga.s3.hgc.originy + (63U-vga.s3.hgc.posy))) ) {
 		return &vga.mem.linear[vidstart];
 	} else {
-		memcpy(TempLine, &vga.mem.linear[ vidstart ], vga.draw.width*2);
+		memcpy(TempLine, &vga.mem.linear[ vidstart ], vga.draw.width<<1);
 		Bitu sourceStartBit = ((lineat - vga.s3.hgc.originy) + vga.s3.hgc.posy)*64 + vga.s3.hgc.posx; 
  		Bitu cursorMemStart = ((sourceStartBit >> 2)& ~1) + (((Bit32u)vga.s3.hgc.startaddr) << 10);
 		Bitu cursorStartBit = sourceStartBit & 0x7;
@@ -373,9 +373,9 @@ static const Bit8u* VGA_Text_Memwrap(Bitu vidstart) {
 		// wrapping in this line
 		Bitu break_pos = (vga.draw.linear_mask - vidstart) + 1;
 		// need a temporary storage - TempLine/2 is ok for a bit more than 132 columns
-		memcpy(&TempLine[sizeof(TempLine)/2], &vga.tandy.draw_base[vidstart], break_pos);
-		memcpy(&TempLine[sizeof(TempLine)/2 + break_pos],&vga.tandy.draw_base[0], line_end - break_pos);
-		return &TempLine[sizeof(TempLine)/2];
+		memcpy(&TempLine[sizeof(TempLine)>>1], &vga.tandy.draw_base[vidstart], break_pos);
+		memcpy(&TempLine[(sizeof(TempLine)>>1) + break_pos],&vga.tandy.draw_base[0], line_end - break_pos);
+		return &TempLine[sizeof(TempLine)>>1];
 	} else return &vga.tandy.draw_base[vidstart];
 }
 
@@ -385,8 +385,8 @@ static Bit8u * VGA_TEXT_Draw_Line(Bitu vidstart, Bitu line) {
 	Bit32u * draw=(Bit32u *)TempLine;
 	const Bit8u* vidmem = VGA_Text_Memwrap(vidstart);
 	for (Bitu cx=0;cx<vga.draw.blocks;cx++) {
-		Bitu chr=vidmem[cx*2];
-		Bitu col=vidmem[cx*2+1];
+		Bitu chr=vidmem[cx<<1];
+		Bitu col=vidmem[(cx<<1)+1];
 		Bitu font=vga.draw.font_tables[(col >> 3)&1][chr*32+line];
 		Bit32u mask1=TXT_Font_Table[font>>4] & FontMask[col >> 7];
 		Bit32u mask2=TXT_Font_Table[font&0xf] & FontMask[col >> 7];
@@ -414,8 +414,8 @@ static Bit8u * VGA_TEXT_Herc_Draw_Line(Bitu vidstart, Bitu line) {
 	const Bit8u* vidmem = VGA_Text_Memwrap(vidstart);
 
 	for (Bitu cx=0;cx<vga.draw.blocks;cx++) {
-		Bitu chr=vidmem[cx*2];
-		Bitu attrib=vidmem[cx*2+1];
+		Bitu chr=vidmem[cx<<1];
+		Bitu attrib=vidmem[(cx<<1)+1];
 		if (!(attrib&0x77)) {
 			// 00h, 80h, 08h, 88h produce black space
 			*draw++=0;
@@ -665,7 +665,7 @@ static void VGA_DrawSingleLine(Bitu /*blah*/) {
 		} else if (vga.draw.bpp==16) {
 			Bit16u* wptr = (Bit16u*) TempLine;
 			Bit16u value = vga.dac.xlat16[bg_color_index];
-			for (Bitu i = 0; i < sizeof(TempLine)/2; i++) {
+			for (Bitu i = 0; i < (sizeof(TempLine)>>1); i++) {
 				wptr[i] = value;
 			}
 		}
@@ -902,8 +902,8 @@ static void VGA_VerticalTimer(Bitu /*val*/) {
 		if (machine==MCH_HERC) vga.draw.linear_mask = 0xfff; // 1 page
 		else if (IS_EGAVGA_ARCH) vga.draw.linear_mask = 0x7fff; // 8 pages
 		else vga.draw.linear_mask = 0x3fff; // CGA, Tandy 4 pages
-		vga.draw.cursor.address=vga.config.cursor_start*2;
-		vga.draw.address *= 2;
+		vga.draw.cursor.address=vga.config.cursor_start<<1;
+		vga.draw.address <<= 1;
 		//vga.draw.cursor.count++; //Moved before the frameskip test.
 		/* check for blinking and blinking change delay */
 		FontMask[1]=(vga.draw.blinking & (vga.draw.cursor.count >> 4)) ?
@@ -915,7 +915,7 @@ static void VGA_VerticalTimer(Bitu /*val*/) {
 		break;
 	case M_HERC_GFX:
 	case M_CGA4:case M_CGA2:
-		vga.draw.address=(vga.draw.address*2)&0x1fff;
+		vga.draw.address=(vga.draw.address<<1)&0x1fff;
 		break;
 	case M_CGA16:
 	case M_TANDY2:case M_TANDY4:case M_TANDY16:
@@ -987,7 +987,7 @@ void VGA_CheckScanLength(void) {
 		vga.draw.address_add=80;
 		return;
 	case M_TANDY2:
-		vga.draw.address_add=vga.draw.blocks/4;
+		vga.draw.address_add=vga.draw.blocks>>2;
 		break;
 	case M_TANDY4:
 		vga.draw.address_add=vga.draw.blocks;
@@ -996,10 +996,10 @@ void VGA_CheckScanLength(void) {
 		vga.draw.address_add=vga.draw.blocks;
 		break;
 	case M_TANDY_TEXT:
-		vga.draw.address_add=vga.draw.blocks*2;
+		vga.draw.address_add=vga.draw.blocks<<1;
 		break;
 	case M_HERC_TEXT:
-		vga.draw.address_add=vga.draw.blocks*2;
+		vga.draw.address_add=vga.draw.blocks<<1;
 		break;
 	case M_HERC_GFX:
 		vga.draw.address_add=vga.draw.blocks;
@@ -1147,7 +1147,7 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 		if (vga.seq.clocking_mode & 1 ) clock/=8; else clock/=9;
 		/* Check for pixel doubling, master clock/2 */
 		if (vga.seq.clocking_mode & 0x8) {
-			htotal*=2;
+			htotal<<=1;
 		}
 		vga.draw.address_line_total=(vga.crtc.maximum_scan_line&0x1f)+1;
 		if (IS_VGA_ARCH && (svgaCard==SVGA_None) && (vga.mode==M_EGA || vga.mode==M_VGA)) {
@@ -1180,11 +1180,11 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 		switch (machine) {
 		case MCH_CGA:
 		case TANDY_ARCH_CASE:
-			clock=((vga.tandy.mode_control & 1) ? 14318180 : (14318180/2))/8;
+			clock=((vga.tandy.mode_control & 1) ? 14318180 : (14318180>>1))>>3;
 			break;
 		case MCH_HERC:
-			if (vga.herc.mode_control & 0x2) clock=16000000/16;
-			else clock=16000000/8;
+			if (vga.herc.mode_control & 0x2) clock=16000000>>4;
+			else clock=16000000>>3;
 			break;
 		default:
 			clock = 14318180;
@@ -1418,13 +1418,13 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 	case M_CGA16:
 		aspect_ratio=1.2;
 		doubleheight=true;
-		vga.draw.blocks=width*2;
+		vga.draw.blocks=width<<1;
 		width<<=4;
 		VGA_DrawLine=VGA_Draw_CGA16_Line;
 		break;
 	case M_CGA4:
 		doublewidth=true;
-		vga.draw.blocks=width*2;
+		vga.draw.blocks=width<<1;
 		width<<=3;
 		VGA_DrawLine=VGA_Draw_2BPP_Line;
 		break;
@@ -1457,7 +1457,7 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 		}
 		break;
 	case M_HERC_GFX:
-		vga.draw.blocks=width*2;
+		vga.draw.blocks=width<<1;
 		width*=16;
 		aspect_ratio=((double)width/(double)height)*(3.0/4.0);
 		VGA_DrawLine=VGA_Draw_1BPP_Line;
@@ -1468,7 +1468,7 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 		if (machine==MCH_PCJR) doublewidth=(vga.tandy.gfx_control & 0x8)==0x00;
 		else doublewidth=(vga.tandy.mode_control & 0x10)==0;
 		vga.draw.blocks=width * (doublewidth ? 4:8);
-		width=vga.draw.blocks*2;
+		width=vga.draw.blocks<<1;
 		VGA_DrawLine=VGA_Draw_1BPP_Line;
 		break;
 	case M_TANDY4:
@@ -1486,15 +1486,15 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 	case M_TANDY16:
 		aspect_ratio=1.2;
 		doubleheight=true;
-		vga.draw.blocks=width*2;
+		vga.draw.blocks=width<<1;
 		if (vga.tandy.mode_control & 0x1) {
 			if (( machine==MCH_TANDY ) && ( vga.tandy.mode_control & 0x10 )) {
 				doublewidth = false;
 				vga.draw.blocks*=2;
-				width=vga.draw.blocks*2;
+				width=vga.draw.blocks<<1;
 			} else {
 				doublewidth = true;
-				width=vga.draw.blocks*2;
+				width=vga.draw.blocks<<1;
 			}
 			VGA_DrawLine=VGA_Draw_4BPP_Line;
 		} else {

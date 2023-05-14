@@ -711,8 +711,8 @@ static SDL_Surface * GFX_SetupSurfaceScaled(Bit32u sdl_flags, Bit32u bpp) {
 	}
 
 	if (sdl.surface && sdl.surface->flags & SDL_FULLSCREEN) {
-		sdl.clip.x = (Sint16)((sdl.surface->w-sdl.clip.w)/2);
-		sdl.clip.y = (Sint16)((sdl.surface->h-sdl.clip.h)/2);
+		sdl.clip.x = (Sint16)((sdl.surface->w-sdl.clip.w)>>1);
+		sdl.clip.y = (Sint16)((sdl.surface->h-sdl.clip.h)>>1);
 	} else {
 		sdl.clip.x = 0;
 		sdl.clip.y = 0;
@@ -835,8 +835,8 @@ dosurface:
 		sdl.clip.h=height;
 		if (sdl.desktop.fullscreen) {
 			if (sdl.desktop.full.fixed) {
-				sdl.clip.x=(Sint16)((sdl.desktop.full.width-width)/2);
-				sdl.clip.y=(Sint16)((sdl.desktop.full.height-height)/2);
+				sdl.clip.x=(Sint16)((sdl.desktop.full.width-width)>>1);
+				sdl.clip.y=(Sint16)((sdl.desktop.full.height-height)>>1);
 				sdl.surface=SDL_SetVideoMode_Wrap(sdl.desktop.full.width,sdl.desktop.full.height,bpp,
 					SDL_FULLSCREEN | ((flags & GFX_CAN_RANDOM) ? SDL_SWSURFACE : SDL_HWSURFACE) |
 					(sdl.desktop.doublebuf ? SDL_DOUBLEBUF|SDL_ASYNCBLIT : 0) | SDL_HWPALETTE);
@@ -1165,9 +1165,9 @@ dosurface:
 			// upper left
 			glTexCoord2f(0,0); glVertex2f(-1.0f, 1.0f);
 			// lower left
-			glTexCoord2f(0,tex_height*2); glVertex2f(-1.0f,-3.0f);
+			glTexCoord2f(0,tex_height<<1); glVertex2f(-1.0f,-3.0f);
 			// upper right
-			glTexCoord2f(tex_width*2,0); glVertex2f(3.0f, 1.0f);
+			glTexCoord2f(tex_width<<1,0); glVertex2f(3.0f, 1.0f);
 			glEnd();
 
 			glEndList();

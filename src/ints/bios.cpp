@@ -126,8 +126,8 @@ static bool Tandy_TransferInProgress(void) {
 	else if (tandy_dac.port) tandy_dma = tandy_dac.dma;
 
 	IO_Write(0x0c,0x00);
-	Bit16u datalen=(Bit8u)(IO_ReadB(tandy_dma*2+1)&0xff);
-	datalen|=(IO_ReadB(tandy_dma*2+1)<<8);
+	Bit16u datalen=(Bit8u)(IO_ReadB((tandy_dma<<1)+1)&0xff);
+	datalen|=(IO_ReadB((tandy_dma<<1)+1)<<8);
 	if (datalen==0xffff) return false;	/* no DMA transfer */
 	else if ((datalen<0x10) && (real_readb(0x40,0xd4)==0x0f) && (real_readw(0x40,0xd2)==0x1c)) {
 		/* stop already requested */
@@ -175,8 +175,8 @@ static void Tandy_SetupTransfer(PhysPt bufpt,bool isplayback) {
 	else IO_Write(0x0b,0x44|tandy_dma);
 	/* set physical address of buffer */
 	Bit8u bufpage=(Bit8u)((bufpt>>16)&0xff);
-	IO_Write(tandy_dma*2,(Bit8u)(bufpt&0xff));
-	IO_Write(tandy_dma*2,(Bit8u)((bufpt>>8)&0xff));
+	IO_Write(tandy_dma<<1,(Bit8u)(bufpt&0xff));
+	IO_Write(tandy_dma<<1,(Bit8u)((bufpt>>8)&0xff));
 	switch (tandy_dma) {
 		case 0: IO_Write(0x87,bufpage); break;
 		case 1: IO_Write(0x83,bufpage); break;
@@ -192,8 +192,8 @@ static void Tandy_SetupTransfer(PhysPt bufpt,bool isplayback) {
 	tlength--;
 
 	/* set transfer size */
-	IO_Write(tandy_dma*2+1,(Bit8u)(tlength&0xff));
-	IO_Write(tandy_dma*2+1,(Bit8u)((tlength>>8)&0xff));
+	IO_Write((tandy_dma<<1)+1,(Bit8u)(tlength&0xff));
+	IO_Write((tandy_dma<<1)+1,(Bit8u)((tlength>>8)&0xff));
 
 	Bit16u delay=(Bit16u)(real_readw(0x40,0xd2)&0xfff);
 	Bit8u amplitude=(Bit8u)((real_readw(0x40,0xd2)>>13)&0x7);
@@ -618,7 +618,7 @@ static Bitu INT14_Handler(void) {
 		return CBRET_NONE;
 	}
 	
-	Bit16u port = real_readw(0x40,reg_dx*2); // DX is always port number
+	Bit16u port = real_readw(0x40,reg_dx<<1); // DX is always port number
 	Bit8u timeout = mem_readb(BIOS_COM1_TIMEOUT + reg_dx);
 	if (port==0)	{
 		LOG(LOG_BIOS,LOG_NORMAL)("BIOS INT14: port %d does not exist.",reg_dx);

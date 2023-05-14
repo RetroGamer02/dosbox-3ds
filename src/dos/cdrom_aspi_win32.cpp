@@ -604,7 +604,7 @@ bool CDROM_Interface_Aspi::GetUPC(unsigned char& attr, char* upcdata)
 	attr	= 0;
 	// Convert to mscdex format
 	for (int i=0; i<7; i++) upcdata[i] = upc.MediaCatalog[i];
-    for (int i=0; i<7; i++) upcdata[i] = (upc.MediaCatalog[i*2] << 4) | (upc.MediaCatalog[i*2+1] & 0x0F);
+    for (int i=0; i<7; i++) upcdata[i] = (upc.MediaCatalog[i<<1] << 4) | (upc.MediaCatalog[(i<<1)+1] & 0x0F);
 
 	return true;
 };

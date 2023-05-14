@@ -45,7 +45,7 @@ void gfxDrawSprite(gfxScreen_t screen, gfx3dSide_t side, u8* spriteData, u16 wid
 	int j;
 	for(j=yOffset; j<yOffset+heightDrawn; j++)
 	{
-		memcpy(&fbAdr[((x+xOffset)+(y+j)*fbWidth)*2], &spriteData[((xOffset)+(j)*width)*2], widthDrawn*2);
+		memcpy(&fbAdr[((x+xOffset)+(y+j)*fbWidth)<<1], &spriteData[((xOffset)+(j)*width)<<1], widthDrawn<<1);
 	}
 }
 

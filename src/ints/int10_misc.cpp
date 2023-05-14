@@ -86,7 +86,7 @@ void INT10_DisplayCombinationCode(Bit16u * dcc,bool set) {
 				Bit16u swap=(*dcc<<8)|(*dcc>>8);
 				// search for the index in the dcc table
 				for (Bit8u entry=0; entry<entries; entry++) {
-					dccentry=real_readw(RealSeg(dcctable),RealOff(dcctable)+0x04+entry*2);
+					dccentry=real_readw(RealSeg(dcctable),RealOff(dcctable)+0x04+entry<<1);
 					if ((dccentry==*dcc) || (dccentry==swap)) {
 						index=entry;
 						break;
@@ -97,7 +97,7 @@ void INT10_DisplayCombinationCode(Bit16u * dcc,bool set) {
 			index=real_readb(BIOSMEM_SEG,BIOSMEM_DCC_INDEX);
 			// check if index within range
 			if (index<entries) {
-				dccentry=real_readw(RealSeg(dcctable),RealOff(dcctable)+0x04+index*2);
+				dccentry=real_readw(RealSeg(dcctable),RealOff(dcctable)+0x04+index<<1);
 				if ((dccentry&0xff)==0) dccentry>>=8;
 				else if (dccentry>>8) {
 					Bit16u cfg_mono=((real_readw(BIOSMEM_SEG,BIOSMEM_INITIAL_MODE)&0x30)==0x30)?1:0;

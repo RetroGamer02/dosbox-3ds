@@ -560,14 +560,14 @@ void CDROM_Interface_Ioctl::dx_CDAudioCallBack(Bitu len) {
 	if (player.ctrlUsed) {
 		Bit16s sample0,sample1;
 		Bit16s * samples=(Bit16s *)&player.buffer;
-		for (Bitu pos=0;pos<len/4;pos++) {
+		for (Bitu pos=0;pos<len>>2;pos++) {
 			sample0=samples[pos*2+player.ctrlData.out[0]];
 			sample1=samples[pos*2+player.ctrlData.out[1]];
 			samples[pos*2+0]=(Bit16s)(sample0*player.ctrlData.vol[0]/255.0);
 			samples[pos*2+1]=(Bit16s)(sample1*player.ctrlData.vol[1]/255.0);
 		}
 	}
-	player.channel->AddSamples_s16(len/4,(Bit16s *)player.buffer);
+	player.channel->AddSamples_s16(len>>2,(Bit16s *)player.buffer);
 	memmove(player.buffer, &player.buffer[len], player.bufLen - len);
 	player.bufLen -= len;
 }

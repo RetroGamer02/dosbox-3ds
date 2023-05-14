@@ -37,7 +37,7 @@ static Bit16s wavtable[WAVEPREC*3];	// wave form table
 
 // vibrato/tremolo tables
 static Bit32s vib_table[VIBTAB_SIZE];
-static Bit32s trem_table[TREMTAB_SIZE*2];
+static Bit32s trem_table[TREMTAB_SIZE<<1];
 
 static Bit32s vibval_const[BLOCKBUF_SIZE];
 static Bit32s tremval_const[BLOCKBUF_SIZE];
@@ -1011,7 +1011,7 @@ void adlib_getsample(Bit16s* sndptr, Bits numsamples) {
 						opfuncs[cptr[9].op_state](&cptr[9]);
 						operator_output(&cptr[9],0,tremval1[i]);
 						
-						Bit32s chanval = cptr[9].cval*2;
+						Bit32s chanval = cptr[9].cval<<1;
 						CHANVAL_OUT
 					}
 				}
@@ -1043,7 +1043,7 @@ void adlib_getsample(Bit16s* sndptr, Bits numsamples) {
 						opfuncs[cptr[9].op_state](&cptr[9]);
 						operator_output(&cptr[9],cptr[0].cval*FIXEDPT,tremval2[i]);
 						
-						Bit32s chanval = cptr[9].cval*2;
+						Bit32s chanval = cptr[9].cval<<1;
 						CHANVAL_OUT
 					}
 				}
@@ -1066,7 +1066,7 @@ void adlib_getsample(Bit16s* sndptr, Bits numsamples) {
 					operator_advance(&cptr[0],vibval3[i]);
 					opfuncs[cptr[0].op_state](&cptr[0]);		//TomTom
 					operator_output(&cptr[0],0,tremval3[i]);
-					Bit32s chanval = cptr[0].cval*2;
+					Bit32s chanval = cptr[0].cval<<1;
 					CHANVAL_OUT
 				}
 			}
@@ -1114,7 +1114,7 @@ void adlib_getsample(Bit16s* sndptr, Bits numsamples) {
 					opfuncs[op[8+9].op_state](&op[8+9]);		//Cymbal
 					operator_output(&op[8+9],0,tremval4[i]);
 
-					Bit32s chanval = (op[7].cval + op[7+9].cval + op[8+9].cval)*2;
+					Bit32s chanval = (op[7].cval + op[7+9].cval + op[8+9].cval)<<1;
 					CHANVAL_OUT
 				}
 			}

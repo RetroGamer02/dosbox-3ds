@@ -126,7 +126,7 @@ void SVGA_S3_WriteCRTC(Bitu reg,Bitu val,Bitu /*iolen*/) {
 	case 0x4c:  /* HGC start address high byte*/
 		vga.s3.hgc.startaddr &=0xff;
 		vga.s3.hgc.startaddr |= ((val & 0xf) << 8);
-		if ((((Bitu)vga.s3.hgc.startaddr)<<10)+((64*64*2)/8) > vga.vmemsize) {
+		if ((((Bitu)vga.s3.hgc.startaddr)<<10)+((64*64*2)>>3) > vga.vmemsize) {
 			vga.s3.hgc.startaddr &= 0xff;	// put it back to some sane area;
 			                                // if read back of this address is ever implemented this needs to change
 			LOG(LOG_VGAMISC,LOG_NORMAL)("VGA:S3:CRTC: HGC pattern address beyond video memory" );

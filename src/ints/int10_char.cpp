@@ -29,8 +29,8 @@
 
 static void CGA2_CopyRow(Bit8u cleft,Bit8u cright,Bit8u rold,Bit8u rnew,PhysPt base) {
 	BIOS_CHEIGHT;
-	PhysPt dest=base+((CurMode->twidth*rnew)*(cheight/2)+cleft);
-	PhysPt src=base+((CurMode->twidth*rold)*(cheight/2)+cleft);
+	PhysPt dest=base+((CurMode->twidth*rnew)*(cheight>>1)+cleft);
+	PhysPt src=base+((CurMode->twidth*rold)*(cheight>>1)+cleft);
 	Bitu copy=(cright-cleft);
 	Bitu nextline=CurMode->twidth;
 	for (Bitu i=0;i<cheight/2U;i++) {
@@ -42,8 +42,8 @@ static void CGA2_CopyRow(Bit8u cleft,Bit8u cright,Bit8u rold,Bit8u rnew,PhysPt b
 
 static void CGA4_CopyRow(Bit8u cleft,Bit8u cright,Bit8u rold,Bit8u rnew,PhysPt base) {
 	BIOS_CHEIGHT;
-	PhysPt dest=base+((CurMode->twidth*rnew)*(cheight/2)+cleft)*2;
-	PhysPt src=base+((CurMode->twidth*rold)*(cheight/2)+cleft)*2;	
+	PhysPt dest=base+((CurMode->twidth*rnew)*(cheight>>1)+cleft)*2;
+	PhysPt src=base+((CurMode->twidth*rold)*(cheight>>1)+cleft)*2;	
 	Bitu copy=(cright-cleft)*2;Bitu nextline=CurMode->twidth*2;
 	for (Bitu i=0;i<cheight/2U;i++) {
 		MEM_BlockCopy(dest,src,copy);
@@ -107,7 +107,7 @@ static void TEXT_CopyRow(Bit8u cleft,Bit8u cright,Bit8u rold,Bit8u rnew,PhysPt b
 
 static void CGA2_FillRow(Bit8u cleft,Bit8u cright,Bit8u row,PhysPt base,Bit8u attr) {
 	BIOS_CHEIGHT;
-	PhysPt dest=base+((CurMode->twidth*row)*(cheight/2)+cleft);
+	PhysPt dest=base+((CurMode->twidth*row)*(cheight>>1)+cleft);
 	Bitu copy=(cright-cleft);
 	Bitu nextline=CurMode->twidth;
 	attr=(attr & 0x3) | ((attr & 0x3) << 2) | ((attr & 0x3) << 4) | ((attr & 0x3) << 6);
@@ -122,7 +122,7 @@ static void CGA2_FillRow(Bit8u cleft,Bit8u cright,Bit8u row,PhysPt base,Bit8u at
 
 static void CGA4_FillRow(Bit8u cleft,Bit8u cright,Bit8u row,PhysPt base,Bit8u attr) {
 	BIOS_CHEIGHT;
-	PhysPt dest=base+((CurMode->twidth*row)*(cheight/2)+cleft)*2;
+	PhysPt dest=base+((CurMode->twidth*row)*(cheight>>1)+cleft)*2;
 	Bitu copy=(cright-cleft)*2;Bitu nextline=CurMode->twidth*2;
 	attr=(attr & 0x3) | ((attr & 0x3) << 2) | ((attr & 0x3) << 4) | ((attr & 0x3) << 6);
 	for (Bitu i=0;i<cheight/2U;i++) {
@@ -353,7 +353,7 @@ void INT10_SetCursorShape(Bit8u first,Bit8u last) {
 				if (last<=3) goto dowrite;
 				if (first+2<last) {
 					if (first>2) {
-						first=(cheight+1)/2;
+						first=(cheight+1)>>1;
 						last=cheight;
 					} else {
 						last=cheight;

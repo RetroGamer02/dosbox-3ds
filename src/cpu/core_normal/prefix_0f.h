@@ -315,7 +315,7 @@
 				GetEArw;
 				SETFLAGBIT(CF,(*earw & mask));
 			} else {
-				GetEAa;eaa+=(((Bit16s)*rmrw)>>4)*2;
+				GetEAa;eaa+=(((Bit16s)*rmrw)>>4)<<1;
 				if (!TEST_PREFIX_ADDR) FixEA16;
 				Bit16u old=LoadMw(eaa);
 				SETFLAGBIT(CF,(old & mask));
@@ -342,7 +342,7 @@
 				SETFLAGBIT(CF,(*earw & mask));
 				*earw|=mask;
 			} else {
-				GetEAa;eaa+=(((Bit16s)*rmrw)>>4)*2;
+				GetEAa;eaa+=(((Bit16s)*rmrw)>>4)<<1;
 				if (!TEST_PREFIX_ADDR) FixEA16;
 				Bit16u old=LoadMw(eaa);
 				SETFLAGBIT(CF,(old & mask));
@@ -434,7 +434,7 @@
 				SETFLAGBIT(CF,(*earw & mask));
 				*earw&= ~mask;
 			} else {
-				GetEAa;eaa+=(((Bit16s)*rmrw)>>4)*2;
+				GetEAa;eaa+=(((Bit16s)*rmrw)>>4)<<1;
 				if (!TEST_PREFIX_ADDR) FixEA16;
 				Bit16u old=LoadMw(eaa);
 				SETFLAGBIT(CF,(old & mask));
@@ -528,7 +528,7 @@
 				SETFLAGBIT(CF,(*earw & mask));
 				*earw^=mask;
 			} else {
-				GetEAa;eaa+=(((Bit16s)*rmrw)>>4)*2;
+				GetEAa;eaa+=(((Bit16s)*rmrw)>>4)<<1;
 				if (!TEST_PREFIX_ADDR) FixEA16;
 				Bit16u old=LoadMw(eaa);
 				SETFLAGBIT(CF,(old & mask));

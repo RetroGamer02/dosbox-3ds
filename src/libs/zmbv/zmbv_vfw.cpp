@@ -244,7 +244,7 @@ DWORD CodecInst::CompressGetFormat(LPBITMAPINFOHEADER lpbiIn, LPBITMAPINFOHEADER
 	lpbiOut->biPlanes		= 1;
 	lpbiOut->biCompression	= *(const DWORD *)CODEC_4CC;
 	lpbiOut->biBitCount		= lpbiIn->biBitCount;
-	lpbiOut->biSizeImage	= lpbiIn->biWidth * lpbiIn->biHeight * lpbiIn->biBitCount/8 + 1024;
+	lpbiOut->biSizeImage	= lpbiIn->biWidth * lpbiIn->biHeight * (lpbiIn->biBitCount>>3) + 1024;
 	lpbiOut->biXPelsPerMeter = lpbiIn->biXPelsPerMeter;
 	lpbiOut->biYPelsPerMeter = lpbiIn->biYPelsPerMeter;
 	lpbiOut->biClrUsed		= 0;
@@ -267,7 +267,7 @@ DWORD CodecInst::CompressBegin(LPBITMAPINFOHEADER lpbiIn, LPBITMAPINFOHEADER lpb
 DWORD CodecInst::CompressGetSize(LPBITMAPINFOHEADER lpbiIn, LPBITMAPINFOHEADER lpbiOut) {
 	if (!CanCompress(lpbiIn, lpbiOut, true))
 		return ICERR_BADFORMAT;
-	return lpbiIn->biWidth * lpbiIn->biHeight * lpbiIn->biBitCount/8 + 1024;
+	return lpbiIn->biWidth * lpbiIn->biHeight * (lpbiIn->biBitCount>>3) + 1024;
 }
 
 DWORD CodecInst::Compress(ICCOMPRESS* icinfo, DWORD dwSize) {

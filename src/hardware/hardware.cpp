@@ -638,8 +638,8 @@ void CAPTURE_AddImage(Bitu width, Bitu height, Bitu bpp, Bitu pitch, Bitu flags,
 				case 8:
 					if (flags & CAPTURE_FLAG_DBLW) {
 						for (Bitu x=0;x<countWidth;x++)
-							doubleRow[x*2+0] =
-							doubleRow[x*2+1] = ((Bit8u *)srcLine)[x];
+							doubleRow[(x<<1)+0] =
+							doubleRow[(x<<1)+1] = ((Bit8u *)srcLine)[x];
 						rowPointer = doubleRow;
 					}
 					break;
@@ -802,19 +802,19 @@ void CAPTURE_AddImage(Bitu width, Bitu height, Bitu bpp, Bitu pitch, Bitu flags,
 					switch ( bpp) {
 					case 8:
 						for (x=0;x<countWidth;x++)
-							((Bit8u *)doubleRow)[x*2+0] =
-							((Bit8u *)doubleRow)[x*2+1] = ((Bit8u *)srcLine)[x];
+							((Bit8u *)doubleRow)[(x<<1)+0] =
+							((Bit8u *)doubleRow)[(x<<1)+1] = ((Bit8u *)srcLine)[x];
 						break;
 					case 15:
 					case 16:
 						for (x=0;x<countWidth;x++)
-							((Bit16u *)doubleRow)[x*2+0] =
-							((Bit16u *)doubleRow)[x*2+1] = ((Bit16u *)srcLine)[x];
+							((Bit16u *)doubleRow)[(x<<1)+0] =
+							((Bit16u *)doubleRow)[(x<<1)+1] = ((Bit16u *)srcLine)[x];
 						break;
 					case 32:
 						for (x=0;x<countWidth;x++)
-							((Bit32u *)doubleRow)[x*2+0] =
-							((Bit32u *)doubleRow)[x*2+1] = ((Bit32u *)srcLine)[x];
+							((Bit32u *)doubleRow)[(x<<1)+0] =
+							((Bit32u *)doubleRow)[(x<<1)+1] = ((Bit32u *)srcLine)[x];
 						break;
 					}
 					srcLine=doubleRow;

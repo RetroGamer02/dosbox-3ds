@@ -29,6 +29,7 @@
 #define PAGES_IN_BLOCK	((1024*1024)/MEM_PAGE_SIZE)
 #define SAFE_MEMORY	32
 #define MAX_MEMORY	64
+#define MAX_MEMORY_O3DS	5
 #define MAX_PAGE_ENTRIES (MAX_MEMORY*1024*1024/4096)
 #define LFB_PAGES	512
 #define MAX_LINKS	((MAX_MEMORY*1024/4)+4096)		//Hopefully enough
@@ -137,8 +138,8 @@ PageHandler * MEM_GetPageHandler(Bitu phys_page) {
 		return memory.phandlers[phys_page];
 	} else if ((phys_page>=memory.lfb.start_page) && (phys_page<memory.lfb.end_page)) {
 		return memory.lfb.handler;
-	} else if ((phys_page>=memory.lfb.start_page+0x01000000/4096) &&
-				(phys_page<memory.lfb.start_page+0x01000000/4096+16)) {
+	} else if ((phys_page>=memory.lfb.start_page+0x01000000>>12) &&
+				(phys_page<memory.lfb.start_page+(0x01000000>>12)+16)) {
 		return memory.lfb.mmiohandler;
 	}
 	return &illegal_page_handler;
@@ -419,8 +420,8 @@ bool MEM_A20_Enabled(void) {
 }
 
 void MEM_A20_Enable(bool enabled) {
-	Bitu phys_base=enabled ? (1024/4) : 0;
-	for (Bitu i=0;i<16;i++) PAGING_MapPage((1024/4)+i,phys_base+i);
+	Bitu phys_base=enabled ? (1024>>2) : 0;
+	for (Bitu i=0;i<16;i++) PAGING_MapPage((1024>>2)+i,phys_base+i);
 	memory.a20.enabled=enabled;
 }
 
@@ -548,17 +549,40 @@ public:
 	
 		/* Setup the Physical Page Links */
 		Bitu memsize=section->Get_int("memsize");
-	
-		if (memsize < 1) memsize = 1;
-		/* max 63 to solve problems with certain xms handlers */
-		if (memsize > MAX_MEMORY-1) {
-			LOG_MSG("Maximum memory size is %d MB",MAX_MEMORY - 1);
-			memsize = MAX_MEMORY-1;
+
+		#ifdef __3DS__
+		{
+			bool isN3DS;
+			APT_CheckNew3DS(&isN3DS);
+		
+			if (memsize < 1) memsize = 1;
+			/* max 63 to solve problems with certain xms handlers */
+			if (isN3DS) {
+				if (memsize > MAX_MEMORY-1) {
+					E_Exit("Maximum New 3DS memory size is %d MB",MAX_MEMORY - 1);
+					memsize = MAX_MEMORY-1;
+				}
+			} else {
+				if (memsize > MAX_MEMORY_O3DS-1) {
+					E_Exit("Maximum Old 3DS memory size is %d MB",MAX_MEMORY_O3DS - 1);
+					memsize = MAX_MEMORY_O3DS-1;
+				}
+			}
+
+			if (memsize > SAFE_MEMORY-1) {
+					LOG_MSG("Memory sizes above %d MB are NOT recommended.",SAFE_MEMORY - 1);
+					LOG_MSG("Stick with the default values unless you are absolutely certain.");
+			}
 		}
-		if (memsize > SAFE_MEMORY-1) {
-			LOG_MSG("Memory sizes above %d MB are NOT recommended.",SAFE_MEMORY - 1);
-			LOG_MSG("Stick with the default values unless you are absolutely certain.");
+		#else
+		{
+			if (memsize > MAX_MEMORY-1) {
+				LOG_MSG("Maximum memory size is %d MB",MAX_MEMORY - 1);
+				memsize = MAX_MEMORY-1;
+			}
 		}
+		#endif
+
 		MemBase = new(std::nothrow) Bit8u[memsize*1024*1024];
 		if (!MemBase) E_Exit("Can't allocate main memory of %" sBitfs(d) " MB",memsize);
 		/* Clear the memory, as new doesn't always give zeroed memory

@@ -426,7 +426,7 @@ static Bitu DOS_21Handler(void) {
 			int a = (14 - dos.date.month)/12;
 			int y = dos.date.year - a;
 			int m = dos.date.month + 12*a - 2;
-			reg_al=(dos.date.day+y+(y/4)-(y/100)+(y/400)+(31*m)/12) % 7;
+			reg_al=(dos.date.day+y+(y>>2)-(y/100)+(y/400)+(31*m)/12) % 7;
 			reg_cx=dos.date.year;
 			reg_dh=dos.date.month;
 			reg_dl=dos.date.day;
@@ -1179,7 +1179,7 @@ static Bitu DOS_20Handler(void) {
 
 static Bitu DOS_27Handler(void) {
 	// Terminate & stay resident
-	Bit16u para = (reg_dx/16)+((reg_dx % 16)>0);
+	Bit16u para = (reg_dx>>4)+((reg_dx % 16)>0);
 	Bit16u psp = dos.psp(); //mem_readw(SegPhys(ss)+reg_sp+2);
 	if (DOS_ResizeMemory(psp,&para)) DOS_Terminate(psp,true,0);
 	return CBRET_NONE;

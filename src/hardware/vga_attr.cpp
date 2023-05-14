@@ -205,7 +205,7 @@ void write_p3c0(Bitu /*port*/,Bitu val,Bitu iolen) {
 				break;
 			case M_VGA:
 			case M_LIN8:
-				vga.config.pel_panning=(val & 0x7)/2;
+				vga.config.pel_panning=(val & 0x7)>>1;
 				break;
 			case M_LIN16:
 			default:

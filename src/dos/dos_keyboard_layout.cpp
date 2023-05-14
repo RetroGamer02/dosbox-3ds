@@ -402,7 +402,7 @@ Bitu keyboard_layout::read_keyboard_file(const char* keyboard_file_name, Bit32s 
 			for (i=0; i<2048;) {
 				if (read_buf[start_pos+table_offset+i]==0) break;	// end of table
 				diacritics_entries++;
-				i+=read_buf[start_pos+table_offset+i+1]*2+2;
+				i+=(read_buf[start_pos+table_offset+i+1]<<1)+2;
 			}
 			// copy diacritics table
 			for (j=0; j<=i; j++) diacritics[j]=read_buf[start_pos+table_offset+j];
@@ -544,7 +544,7 @@ bool keyboard_layout::layout_key(Bitu key, Bit8u flags1, Bit8u flags2, Bit8u fla
 				Bit16u diacritics_start=0;
 				// search start of subtable
 				for (Bit16u i=0; i<diacritics_character-200; i++)
-					diacritics_start+=diacritics[diacritics_start+1]*2+2;
+					diacritics_start+=(diacritics[diacritics_start+1]<<1)+2;
 
 				BIOS_AddKeyToBuffer((Bit16u)(key<<8) | diacritics[diacritics_start]);
 				diacritics_character=0;
@@ -584,7 +584,7 @@ bool keyboard_layout::map_key(Bitu key, Bit16u layouted_key, bool is_command, bo
 				Bit16u diacritics_start=0;
 				// search start of subtable
 				for (Bit16u i=0; i<diacritics_character-200; i++)
-					diacritics_start+=diacritics[diacritics_start+1]*2+2;
+					diacritics_start+=(diacritics[diacritics_start+1]<<1)+2;
 
 				Bit8u diacritics_length=diacritics[diacritics_start+1];
 				diacritics_start+=2;
@@ -592,7 +592,7 @@ bool keyboard_layout::map_key(Bitu key, Bit16u layouted_key, bool is_command, bo
 
 				// search scancode
 				for (Bit16u i=0; i<diacritics_length; i++) {
-					if (diacritics[diacritics_start+i*2]==(layouted_key&0xff)) {
+					if (diacritics[(diacritics_start+i)<<1]==(layouted_key&0xff)) {
 						// add diacritics to keybuf
 						BIOS_AddKeyToBuffer((Bit16u)(key<<8) | diacritics[diacritics_start+i*2+1]);
 						return true;

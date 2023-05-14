@@ -34,7 +34,7 @@
 #include "dma.h"
 
 #define EMM_PAGEFRAME	0xE000
-#define EMM_PAGEFRAME4K	((EMM_PAGEFRAME*16)/4096)
+#define EMM_PAGEFRAME4K	((EMM_PAGEFRAME*16)>>12)
 #define	EMM_MAX_HANDLES	200				/* 255 Max */
 #define EMM_PAGE_SIZE	(16*1024U)
 #define EMM_MAX_PAGES	(32 * 1024 / 16 )
@@ -143,7 +143,7 @@ bool device_EMM::ReadFromControlChannel(PhysPt bufptr,Bit16u size,Bit16u * retco
 			mem_writed(GEMMIS_addr+0x06,0);					// reserved
 
 			/* build non-EMS frames (0-0xe000) */
-			for (Bitu frct=0; frct<EMM_PAGEFRAME4K/4; frct++) {
+			for (Bitu frct=0; frct<EMM_PAGEFRAME4K>>2; frct++) {
 				mem_writeb(GEMMIS_addr+0x0a+frct*6,0x00);	// frame type: NONE
 				mem_writeb(GEMMIS_addr+0x0b+frct*6,0xff);	// owner: NONE
 				mem_writew(GEMMIS_addr+0x0c+frct*6,0xffff);	// non-EMS frame
@@ -151,8 +151,8 @@ bool device_EMM::ReadFromControlChannel(PhysPt bufptr,Bit16u size,Bit16u * retco
 				mem_writeb(GEMMIS_addr+0x0f+frct*6,0xaa);	// flags: direct mapping
 			}
 			/* build EMS page frame (0xe000-0xf000) */
-			for (Bitu frct=0; frct<0x10/4; frct++) {
-				Bitu frnr=(frct+EMM_PAGEFRAME4K/4)*6;
+			for (Bitu frct=0; frct<0x10>>2; frct++) {
+				Bitu frnr=(frct+(EMM_PAGEFRAME4K>>2))*6;
 				mem_writeb(GEMMIS_addr+0x0a+frnr,0x03);		// frame type: EMS frame in 64k page
 				mem_writeb(GEMMIS_addr+0x0b+frnr,0xff);		// owner: NONE
 				mem_writew(GEMMIS_addr+0x0c+frnr,0x7fff);	// no logical page number
@@ -160,7 +160,7 @@ bool device_EMM::ReadFromControlChannel(PhysPt bufptr,Bit16u size,Bit16u * retco
 				mem_writeb(GEMMIS_addr+0x0f+frnr,0x00);		// EMS frame
 			}
 			/* build non-EMS ROM frames (0xf000-0x10000) */
-			for (Bitu frct=(EMM_PAGEFRAME4K+0x10)/4; frct<0xf0/4; frct++) {
+			for (Bitu frct=(EMM_PAGEFRAME4K+0x10)>>2; frct<0xf0>>2; frct++) {
 				mem_writeb(GEMMIS_addr+0x0a+frct*6,0x00);	// frame type: NONE
 				mem_writeb(GEMMIS_addr+0x0b+frct*6,0xff);	// owner: NONE
 				mem_writew(GEMMIS_addr+0x0c+frct*6,0xffff);	// non-EMS frame
@@ -175,7 +175,7 @@ bool device_EMM::ReadFromControlChannel(PhysPt bufptr,Bit16u size,Bit16u * retco
 			mem_writed(GEMMIS_addr+0x18f,0);			// handle name
 			mem_writed(GEMMIS_addr+0x193,0);			// handle name
 			if (emm_handles[EMM_SYSTEM_HANDLE].pages != NULL_HANDLE) {
-				mem_writew(GEMMIS_addr+0x197,(emm_handles[EMM_SYSTEM_HANDLE].pages+3)/4);
+				mem_writew(GEMMIS_addr+0x197,(emm_handles[EMM_SYSTEM_HANDLE].pages+3)>>2);
 				mem_writed(GEMMIS_addr+0x199,emm_handles[EMM_SYSTEM_HANDLE].mem<<12);	// physical address
 			} else {
 				mem_writew(GEMMIS_addr+0x197,0x0001);		// system handle
@@ -228,7 +228,7 @@ struct MoveRegion {
 };
 
 static Bit16u EMM_GetFreePages(void) {
-	Bitu count=MEM_FreeTotal()/4;
+	Bitu count=MEM_FreeTotal()>>2;
 	if (count>0x7fff) count=0x7fff;
 	return (Bit16u)count;
 }
@@ -733,7 +733,7 @@ static Bitu INT67_Handler(void) {
 		reg_ah=EMM_NO_ERROR;
 		break;
 	case 0x42:		/* Get number of pages */
-		reg_dx=(Bit16u)(MEM_TotalPages()/4);		//Not entirely correct but okay
+		reg_dx=(Bit16u)(MEM_TotalPages()>>2);		//Not entirely correct but okay
 		reg_bx=EMM_GetFreePages();
 		reg_ah=EMM_NO_ERROR;
 		break;
@@ -867,7 +867,7 @@ static Bitu INT67_Handler(void) {
 			}
 			break;
 		case 0x01:	// get unallocated raw page count
-			reg_dx=(Bit16u)(MEM_TotalPages()/4);		//Not entirely correct but okay
+			reg_dx=(Bit16u)(MEM_TotalPages()>>2);		//Not entirely correct but okay
 			reg_bx=EMM_GetFreePages();
 			break;
 		default:

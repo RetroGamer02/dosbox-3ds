@@ -291,7 +291,7 @@ void CDirectSerial::updateMSR () {
 void CDirectSerial::transmitByte (Bit8u val, bool first) {
 	if(!SERIAL_sendchar(comport, val))
 		LOG_MSG("Serial%d: COM port error: write failed!", COMNUMBER);
-	if(first) setEvent(SERIAL_THR_EVENT, bytetime/8);
+	if(first) setEvent(SERIAL_THR_EVENT, bytetime>>3);
 	else setEvent(SERIAL_TX_EVENT, bytetime);
 }
 

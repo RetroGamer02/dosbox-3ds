@@ -275,7 +275,7 @@ static void INLINE decode_increase_wmapmask(Bitu size) {
 		if (GCC_UNLIKELY(mapidx+size>=activecb->cache.masklen)) {
 			// mask buffer too small, increase
 			Bitu newmasklen=activecb->cache.masklen*4;
-			if (newmasklen<mapidx+size) newmasklen=((mapidx+size)&~3)*2;
+			if (newmasklen<mapidx+size) newmasklen=((mapidx+size)&~3)<<1;
 			Bit8u* tempmem=(Bit8u*)malloc(newmasklen);
 			memset(tempmem,0,newmasklen);
 			memcpy(tempmem,activecb->cache.wmapmask,activecb->cache.masklen);

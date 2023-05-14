@@ -126,7 +126,7 @@ INLINE static Bit32u ModeOperation(Bit8u val) {
 
 /* Gonna assume that whoever maps vga memory, maps it on 32/64kb boundary */
 
-#define VGA_PAGES		(128/4)
+#define VGA_PAGES		(128>>2)
 #define VGA_PAGE_A0		(0xA0000/4096)
 #define VGA_PAGE_B0		(0xB0000/4096)
 #define VGA_PAGE_B8		(0xB8000/4096)

@@ -169,7 +169,7 @@ restart_opcode:
 				Bitu len=(GETIP-reg_eip);
 				LOADIP;
 				if (len>16) len=16;
-				char tempcode[16*2+1];char * writecode=tempcode;
+				char tempcode[(16<<1)+1];char * writecode=tempcode;
 				for (;len>0;len--) {
 					sprintf(writecode,"%02X",mem_readb(core.cseip++));
 					writecode+=2;

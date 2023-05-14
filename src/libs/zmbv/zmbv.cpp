@@ -58,7 +58,7 @@ int VideoCodec::NeededSize( int _width, int _height, zmbv_format_t _format) {
 	default:
 		return -1;
 	}
-	f = f*_width*_height + 2*(1+(_width/8)) * (1+(_height/8))+1024;
+	f = f*_width*_height + 2*(1+(_width>>3)) * (1+(_height>>3))+1024;
 	return f + f/1000;
 }
 

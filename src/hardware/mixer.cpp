@@ -256,15 +256,15 @@ inline void MixerChannel::AddSamples(Bitu len, const Type* data) {
 			if ( sizeof( Type) == 1) {
 				if (!signeddata) {
 					if (stereo) {
-						nextSample[0]=(((Bit8s)(data[pos*2+0] ^ 0x80)) << 8);
-						nextSample[1]=(((Bit8s)(data[pos*2+1] ^ 0x80)) << 8);
+						nextSample[0]=(((Bit8s)(data[(pos<<1)+0] ^ 0x80)) << 8);
+						nextSample[1]=(((Bit8s)(data[(pos<<1)+1] ^ 0x80)) << 8);
 					} else {
 						nextSample[0]=(((Bit8s)(data[pos] ^ 0x80)) << 8);
 					}
 				} else {
 					if (stereo) {
-						nextSample[0]=(data[pos*2+0] << 8);
-						nextSample[1]=(data[pos*2+1] << 8);
+						nextSample[0]=(data[(pos<<1)+0] << 8);
+						nextSample[1]=(data[(pos<<1)+1] << 8);
 					} else {
 						nextSample[0]=(data[pos] << 8);
 					}
@@ -274,15 +274,15 @@ inline void MixerChannel::AddSamples(Bitu len, const Type* data) {
 				if (signeddata) {
 					if (stereo) {
 						if (nativeorder) {
-							nextSample[0]=data[pos*2+0];
-							nextSample[1]=data[pos*2+1];
+							nextSample[0]=data[(pos<<1)+0];
+							nextSample[1]=data[(pos<<1)+1];
 						} else {
 							if ( sizeof( Type) == 2) {
-								nextSample[0]=(Bit16s)host_readw((HostPt)&data[pos*2+0]);
-								nextSample[1]=(Bit16s)host_readw((HostPt)&data[pos*2+1]);
+								nextSample[0]=(Bit16s)host_readw((HostPt)&data[(pos<<1)+0]);
+								nextSample[1]=(Bit16s)host_readw((HostPt)&data[(pos<<1)+1]);
 							} else {
-								nextSample[0]=(Bit32s)host_readd((HostPt)&data[pos*2+0]);
-								nextSample[1]=(Bit32s)host_readd((HostPt)&data[pos*2+1]);
+								nextSample[0]=(Bit32s)host_readd((HostPt)&data[(pos<<1)+0]);
+								nextSample[1]=(Bit32s)host_readd((HostPt)&data[(pos<<1)+1]);
 							}
 						}
 					} else {
@@ -299,15 +299,15 @@ inline void MixerChannel::AddSamples(Bitu len, const Type* data) {
 				} else {
 					if (stereo) {
 						if (nativeorder) {
-							nextSample[0]=(Bits)data[pos*2+0]-32768;
-							nextSample[1]=(Bits)data[pos*2+1]-32768;
+							nextSample[0]=(Bits)data[(pos<<1)+0]-32768;
+							nextSample[1]=(Bits)data[(pos<<1)+1]-32768;
 						} else {
 							if ( sizeof( Type) == 2) {
-								nextSample[0]=(Bits)host_readw((HostPt)&data[pos*2+0])-32768;
-								nextSample[1]=(Bits)host_readw((HostPt)&data[pos*2+1])-32768;
+								nextSample[0]=(Bits)host_readw((HostPt)&data[(pos<<1)+0])-32768;
+								nextSample[1]=(Bits)host_readw((HostPt)&data[(pos<<1)+1])-32768;
 							} else {
-								nextSample[0]=(Bits)host_readd((HostPt)&data[pos*2+0])-32768;
-								nextSample[1]=(Bits)host_readd((HostPt)&data[pos*2+1])-32768;
+								nextSample[0]=(Bits)host_readd((HostPt)&data[(pos<<1)+0])-32768;
+								nextSample[1]=(Bits)host_readd((HostPt)&data[(pos<<1)+1])-32768;
 							}
 						}
 					} else {

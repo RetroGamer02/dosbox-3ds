@@ -284,10 +284,10 @@ static Bitu disney_read(Bitu port,Bitu /*iolen*/){
 }
 
 static void DISNEY_PlayStereo(Bitu len, Bit8u* l, Bit8u* r) {
-	static Bit8u stereodata[DISNEY_SIZE*2];
+	static Bit8u stereodata[DISNEY_SIZE<<1];
 	for(Bitu i = 0; i < len; i++) {
-		stereodata[i*2] = l[i];
-		stereodata[i*2+1] = r[i];
+		stereodata[i<<1] = l[i];
+		stereodata[(i<<1)+1] = r[i];
 	}
 	disney.chan->AddSamples_s8(len,stereodata);
 }
