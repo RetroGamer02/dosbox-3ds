@@ -370,13 +370,13 @@ public:
 			if (priv_check==3) {
 				LOG(LOG_PAGING,LOG_NORMAL)("Page access denied: cpl=%i, %x:%x:%x:%x",
 					cpu.cpl,entry.block.us,table.block.us,entry.block.wr,table.block.wr);
-				PAGING_PageFault(lin_addr,(table.block.base<<12)+(lin_page & 0x3ff)*4,0x05 | (writing?0x02:0x00));
+				PAGING_PageFault(lin_addr,(table.block.base<<12)+(lin_page & 0x3ff)<<2,0x05 | (writing?0x02:0x00));
 				priv_check=0;
 			}
 
 			if (!table.block.a) {
 				table.block.a=1;		// set page table accessed
-				phys_writed((paging.base.page<<12)+(lin_page >> 10)*4,table.load);
+				phys_writed((paging.base.page<<12)+(lin_page >> 10)<<2,table.load);
 			}
 			if ((!entry.block.a) || (!entry.block.d)) {
 				entry.block.a=1;		// set page accessed
@@ -385,7 +385,7 @@ public:
 				// page will be fully linked so we can't track later writes
 				if (writing || (priv_check==0)) entry.block.d=1;		// mark page as dirty
 
-				phys_writed((table.block.base<<12)+((lin_page & 0x3ff)<<2),entry.load);
+				phys_writed((table.block.base<<12)+(lin_page & 0x3ff)<<2,entry.load);
 			}
 
 			phys_page=entry.block.base;

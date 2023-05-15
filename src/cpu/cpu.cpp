@@ -299,7 +299,7 @@ public:
 			_esp=mem_readd(where);
 			_ss=mem_readw(where+4);
 		} else {
-			PhysPt where=base+offsetof(TSS_16,sp0)+level<<2;
+			PhysPt where=base+offsetof(TSS_16,sp0)+level*4;
 			_esp=mem_readw(where);
 			_ss=mem_readw(where+2);
 		}
@@ -1208,7 +1208,7 @@ call_code:
 						if (call.saved.gate.paramcount&31) {
 							if (call.Type()==DESC_386_CALL_GATE) {
 								for (Bits i=(call.saved.gate.paramcount&31)-1;i>=0;i--) 
-									mem_readd(o_stack+i<<2);
+									mem_readd(o_stack+i*4);
 							} else {
 								for (Bits i=(call.saved.gate.paramcount&31)-1;i>=0;i--)
 									mem_readw((o_stack+i)<<1);
@@ -1244,7 +1244,7 @@ call_code:
 							CPU_Push32(o_esp);
 							if (call.saved.gate.paramcount&31)
 								for (Bits i=(call.saved.gate.paramcount&31)-1;i>=0;i--) 
-									CPU_Push32(mem_readd(o_stack+(i<<2)));
+									CPU_Push32(mem_readd(o_stack+i*4));
 							CPU_Push32(oldcs);
 							CPU_Push32(oldeip);
 						} else {

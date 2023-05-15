@@ -56,10 +56,10 @@
 #include "lazyflags.h"
 #include "pic.h"
 
-#define CACHE_MAXSIZE	(4096*2)
-#define CACHE_TOTAL		(1024*1024*8)
+#define CACHE_MAXSIZE	(4096<<1)
+
 #define CACHE_PAGES		(512)
-#define CACHE_BLOCKS	(128*1024)
+
 #define CACHE_ALIGN		(16)
 #define DYN_HASH_SHIFT	(4)
 #define DYN_PAGE_HASH	(4096>>DYN_HASH_SHIFT)
@@ -141,7 +141,7 @@ static struct {
 #define X86_64		0x02
 #define MIPSEL		0x03
 #define ARMV4LE		0x04
-#define ARMV6K		0x05
+#define ARMV6KLE	0x05
 #define ARMV7LE		0x06
 #define ARMV8LE		0x07
 
@@ -151,7 +151,7 @@ static struct {
 #include "core_dynrec/risc_x86.h"
 #elif C_TARGETCPU == MIPSEL
 #include "core_dynrec/risc_mipsel32.h"
-#elif (C_TARGETCPU == ARMV4LE) || (C_TARGETCPU == ARMV6K) || (C_TARGETCPU == ARMV7LE)
+#elif (C_TARGETCPU == ARMV4LE) || (C_TARGETCPU == ARMV6KLE) || (C_TARGETCPU == ARMV7LE)
 #include "core_dynrec/risc_armv4le.h"
 #elif C_TARGETCPU == ARMV8LE
 #include "core_dynrec/risc_armv8le.h"
@@ -162,16 +162,18 @@ static struct {
 CacheBlockDynRec * LinkBlocks(BlockReturn ret) {
 	CacheBlockDynRec * block=NULL;
 	// the last instruction was a control flow modifying instruction
-	Bitu temp_ip=SegPhys(cs)+reg_eip;
+	uint32_t temp_ip=SegPhys(cs)+reg_eip;
 	CodePageHandlerDynRec * temp_handler=(CodePageHandlerDynRec *)get_tlb_readhandler(temp_ip);
 	if (temp_handler->flags & (cpu.code.big ? PFLAG_HASCODE32:PFLAG_HASCODE16)) {
 		// see if the target is an already translated block
 		block=temp_handler->FindCacheBlock(temp_ip & 4095);
-		if (block) { // found it, link the current block to
-			cache.block.running->LinkTo(ret==BR_Link2,block);
-		}
+		if (!block) return NULL;
+
+		// found it, link the current block to
+		cache.block.running->LinkTo(ret==BR_Link2,block);
+		return block;
 	}
-	return block;
+	return NULL;
 }
 
 /*
@@ -217,12 +219,13 @@ Bits CPU_Core_Dynrec_Run(void) {
 				// let the normal core handle this instruction to avoid zero-sized blocks
 				Bitu old_cycles=CPU_Cycles;
 				CPU_Cycles=1;
+				CPU_CycleLeft+=old_cycles;
 				Bits nc_retcode=CPU_Core_Normal_Run();
 				if (!nc_retcode) {
 					CPU_Cycles=old_cycles-1;
+					CPU_CycleLeft-=old_cycles;
 					continue;
 				}
-				CPU_CycleLeft+=old_cycles;
 				return nc_retcode;
 			}
 		}
@@ -327,6 +330,16 @@ Bits CPU_Core_Dynrec_Trap_Run(void) {
 }
 
 void CPU_Core_Dynrec_Init(void) {
+	bool isN3DS;
+	APT_CheckNew3DS(&isN3DS);
+	if (isN3DS)
+	{
+		CACHE_TOTAL	= (1024*1024*8);
+		CACHE_BLOCKS = (128*1024);
+	} else {
+		CACHE_TOTAL = (1024*1024);
+		CACHE_BLOCKS = (32*1024);
+	}
 }
 
 void CPU_Core_Dynrec_Cache_Init(bool enable_cache) {
