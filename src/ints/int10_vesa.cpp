@@ -197,8 +197,8 @@ foundit:
 		if (!int10.vesa_nolfb) modeAttributes |= 0x80;	// linear framebuffer
 		break;
 	case M_LIN32:
-		pageSize = mblock->sheight * mblock->swidth*4;
-		var_write(&minfo.BytesPerScanLine,mblock->swidth*4);
+		pageSize = mblock->sheight * mblock->swidth<<2;
+		var_write(&minfo.BytesPerScanLine,mblock->swidth<<2);
 		var_write(&minfo.NumberOfPlanes,0x1);
 		var_write(&minfo.BitsPerPixel,32);
 		var_write(&minfo.MemoryModel,6);	//HiColour

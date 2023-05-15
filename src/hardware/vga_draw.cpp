@@ -338,7 +338,7 @@ static Bit8u * VGA_Draw_LIN32_Line_HWMouse(Bitu vidstart, Bitu /*line*/) {
 		(lineat > (vga.s3.hgc.originy + (63U-vga.s3.hgc.posy))) ) {
 		return &vga.mem.linear[ vidstart ];
 	} else {
-		memcpy(TempLine, &vga.mem.linear[ vidstart ], vga.draw.width*4);
+		memcpy(TempLine, &vga.mem.linear[ vidstart ], vga.draw.width<<2);
 		Bitu sourceStartBit = ((lineat - vga.s3.hgc.originy) + vga.s3.hgc.posy)*64 + vga.s3.hgc.posx; 
 		Bitu cursorMemStart = ((sourceStartBit >> 2)& ~1) + (((Bit32u)vga.s3.hgc.startaddr) << 10);
 		Bitu cursorStartBit = sourceStartBit & 0x7;
@@ -400,7 +400,7 @@ static Bit8u * VGA_TEXT_Draw_Line(Bitu vidstart, Bitu line) {
 	if (font_addr>=0 && font_addr<(Bits)vga.draw.blocks) {
 		if (line<vga.draw.cursor.sline) goto skip_cursor;
 		if (line>vga.draw.cursor.eline) goto skip_cursor;
-		draw=(Bit32u *)&TempLine[font_addr*8];
+		draw=(Bit32u *)&TempLine[font_addr<<3];
 		Bit32u att=TXT_FG_Table[vga.tandy.draw_base[vga.draw.cursor.address+1]&0xf];
 		*draw++=att;*draw++=att;
 	}
@@ -449,7 +449,7 @@ static Bit8u * VGA_TEXT_Herc_Draw_Line(Bitu vidstart, Bitu line) {
 	if (font_addr>=0 && font_addr<(Bits)vga.draw.blocks) {
 		if (line<vga.draw.cursor.sline) goto skip_cursor;
 		if (line>vga.draw.cursor.eline) goto skip_cursor;
-		draw=(Bit32u *)&TempLine[font_addr*8];
+		draw=(Bit32u *)&TempLine[font_addr<<3];
 		Bit8u attr = vga.tandy.draw_base[vga.draw.cursor.address+1];
 		Bit32u cg;
 		if (attr&0x8) {
@@ -976,10 +976,10 @@ void VGA_CheckScanLength(void) {
 	case M_LIN15:
 	case M_LIN16:
 	case M_LIN32:
-		vga.draw.address_add=vga.config.scan_len*8;
+		vga.draw.address_add=vga.config.scan_len<<3;
 		break;
 	case M_TEXT:
-		vga.draw.address_add=vga.config.scan_len*4;
+		vga.draw.address_add=vga.config.scan_len<<2;
 		break;
 	case M_CGA2:
 	case M_CGA4:
@@ -1005,7 +1005,7 @@ void VGA_CheckScanLength(void) {
 		vga.draw.address_add=vga.draw.blocks;
 		break;
 	default:
-		vga.draw.address_add=vga.draw.blocks*8;
+		vga.draw.address_add=vga.draw.blocks<<3;
 		break;
 	}
 }
@@ -1477,7 +1477,7 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 		if (machine==MCH_TANDY) doublewidth=(vga.tandy.mode_control & 0x10)==0;
 		else doublewidth=(vga.tandy.mode_control & 0x01)==0x00;
 		vga.draw.blocks=width * 2;
-		width=vga.draw.blocks*4;
+		width=vga.draw.blocks<<2;
 		if ((machine==MCH_TANDY && (vga.tandy.gfx_control & 0x8)) ||
 			(machine==MCH_PCJR && (vga.tandy.mode_control==0x0b)))
 			VGA_DrawLine=VGA_Draw_2BPPHiRes_Line;
@@ -1499,7 +1499,7 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 			VGA_DrawLine=VGA_Draw_4BPP_Line;
 		} else {
 			doublewidth=true;
-			width=vga.draw.blocks*4;
+			width=vga.draw.blocks<<2;
 			VGA_DrawLine=VGA_Draw_4BPP_Line_Double;
 		}
 		break;

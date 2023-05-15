@@ -76,7 +76,7 @@ void DOS_InfoBlock::SetLocation(Bit16u segment) {
 	
 	sSave(sDIB,bootDrive,(Bit8u)0);
 	sSave(sDIB,useDwordMov,(Bit8u)1);
-	sSave(sDIB,extendedSize,(Bit16u)(MEM_TotalPages()*4-1024));
+	sSave(sDIB,extendedSize,(Bit16u)((MEM_TotalPages()<<2)-1024));
 	sSave(sDIB,magicWord,(Bit16u)0x0001);		// dos5+
 
 	sSave(sDIB,sharingCount,(Bit16u)0);

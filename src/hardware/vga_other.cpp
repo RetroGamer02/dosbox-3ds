@@ -803,7 +803,7 @@ void VGA_SetupOther(void) {
 
 	if (machine==MCH_CGA || IS_TANDY_ARCH) {
 		extern Bit8u int10_font_08[256 * 8];
-		for (i=0;i<256;i++)	memcpy(&vga.draw.font[i*32],&int10_font_08[i*8],8);
+		for (i=0;i<256;i++)	memcpy(&vga.draw.font[i*32],&int10_font_08[i<<3],8);
 		vga.draw.font_tables[0]=vga.draw.font_tables[1]=vga.draw.font;
 	}
 	if (machine==MCH_CGA || IS_TANDY_ARCH || machine==MCH_HERC) {

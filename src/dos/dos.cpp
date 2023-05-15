@@ -544,8 +544,8 @@ static Bitu DOS_21Handler(void) {
 		reg_bx=DOS_SDA_OFS + 0x01;
 		break;
 	case 0x35:		/* Get interrupt vector */
-		reg_bx=real_readw(0,((Bit16u)reg_al)*4);
-		SegSet16(es,real_readw(0,((Bit16u)reg_al)*4+2));
+		reg_bx=real_readw(0,((Bit16u)reg_al)<<2);
+		SegSet16(es,real_readw(0,(((Bit16u)reg_al)<<2)+2));
 		break;
 	case 0x36:		/* Get Free Disk Space */
 		{

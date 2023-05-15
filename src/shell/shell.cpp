@@ -697,11 +697,11 @@ void SHELL_Init() {
 
 	/* Set up int 24 and psp (Telarium games) */
 	real_writeb(psp_seg+16+1,0,0xea);		/* far jmp */
-	real_writed(psp_seg+16+1,1,real_readd(0,0x24*4));
-	real_writed(0,0x24*4,((Bit32u)psp_seg<<16) | ((16+1)<<4));
+	real_writed(psp_seg+16+1,1,real_readd(0,0x24<<2));
+	real_writed(0,0x24<<2,((Bit32u)psp_seg<<16) | ((16+1)<<4));
 
 	/* Set up int 23 to "int 20" in the psp. Fixes what.exe */
-	real_writed(0,0x23*4,((Bit32u)psp_seg<<16));
+	real_writed(0,0x23<<2,((Bit32u)psp_seg<<16));
 
 	/* Set up int 2e handler */
 	Bitu call_int2e=CALLBACK_Allocate();

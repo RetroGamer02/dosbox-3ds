@@ -77,7 +77,7 @@ private:
 	int workUsed, workPos;
 
 	int palsize;
-	char palette[256*4];
+	char palette[256<<2];
 	int height, width, pitch;
 	zmbv_format_t format;
 	int pixelsize;

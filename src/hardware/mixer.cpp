@@ -330,8 +330,8 @@ inline void MixerChannel::AddSamples(Bitu len, const Type* data) {
 				offset[0] = nextSample[0] - prevSample[0];
 				if (stereo) offset[1] = nextSample[1] - prevSample[1];
 				//Don't bother with small steps.
-				if (offset[0] < (MIXER_UPRAMP_SAVE*4) && offset[0] > (-MIXER_UPRAMP_SAVE*4)) offset[0] = 0;
-				if (offset[1] < (MIXER_UPRAMP_SAVE*4) && offset[1] > (-MIXER_UPRAMP_SAVE*4)) offset[1] = 0;
+				if (offset[0] < (MIXER_UPRAMP_SAVE<<2) && offset[0] > (-MIXER_UPRAMP_SAVE<<2)) offset[0] = 0;
+				if (offset[1] < (MIXER_UPRAMP_SAVE<<2) && offset[1] > (-MIXER_UPRAMP_SAVE<<2)) offset[1] = 0;
 			}
 
 			if (offset[0] || offset[1]) {

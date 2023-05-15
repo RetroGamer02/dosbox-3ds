@@ -125,8 +125,8 @@ static INLINE bool InvalidHandle(Bitu handle) {
 
 Bitu XMS_QueryFreeMemory(Bit16u& largestFree, Bit16u& totalFree) {
 	/* Scan the tree for free memory and find largest free block */
-	totalFree=(Bit16u)(MEM_FreeTotal()*4);
-	largestFree=(Bit16u)(MEM_FreeLargest()*4);
+	totalFree=(Bit16u)(MEM_FreeTotal()<<2);
+	largestFree=(Bit16u)(MEM_FreeLargest()<<2);
 	if (!totalFree) return XMS_OUT_OF_SPACE;
 	return 0;
 }

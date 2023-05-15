@@ -982,8 +982,8 @@ public:
 			if (!IS_TANDY_ARCH && floppysize!=0) GetDMAChannel(2)->tcount=true;
 
 			/* revector some dos-allocated interrupts */
-			real_writed(0,0x01*4,0xf000ff53);
-			real_writed(0,0x03*4,0xf000ff53);
+			real_writed(0,0x01<<2,0xf000ff53);
+			real_writed(0,0x03<<2,0xf000ff53);
 
 			SegSet16(cs, 0);
 			reg_ip = 0x7c00;

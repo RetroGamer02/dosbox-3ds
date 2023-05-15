@@ -354,7 +354,7 @@ Bitu keyboard_layout::read_keyboard_file(const char* keyboard_file_name, Bit32s 
 	if (additional_planes>(layout_pages-4)) additional_planes=(layout_pages-4);
 
 	// seek to plane descriptor
-	read_buf_pos=start_pos+0x14+submappings*8;
+	read_buf_pos=start_pos+0x14+(submappings<<3);
 	for (Bit16u cplane=0; cplane<additional_planes; cplane++) {
 		Bit16u plane_flags;
 
@@ -387,14 +387,14 @@ Bitu keyboard_layout::read_keyboard_file(const char* keyboard_file_name, Bit32s 
 		if ((sub_map!=0) && (specific_layout!=-1)) sub_map=(Bit16u)(specific_layout&0xffff);
 
 		// read codepage of submapping
-		submap_cp=host_readw(&read_buf[start_pos+0x14+sub_map*8]);
+		submap_cp=host_readw(&read_buf[start_pos+0x14+(sub_map<<3)]);
 		if ((submap_cp!=0) && (submap_cp!=requested_codepage) && (specific_layout==-1))
 			continue;		// skip nonfitting submappings
 
 		if (submap_cp==requested_codepage) found_matching_layout=true;
 
 		// get table offset
-		table_offset=host_readw(&read_buf[start_pos+0x18+sub_map*8]);
+		table_offset=host_readw(&read_buf[start_pos+0x18+(sub_map<<3)]);
 		diacritics_entries=0;
 		if (table_offset!=0) {
 			// process table
@@ -410,7 +410,7 @@ Bitu keyboard_layout::read_keyboard_file(const char* keyboard_file_name, Bit32s 
 
 
 		// get table offset
-		table_offset=host_readw(&read_buf[start_pos+0x16+sub_map*8]);
+		table_offset=host_readw(&read_buf[start_pos+0x16+(sub_map<<3)]);
 		if (table_offset==0) continue;	// non-present table
 
 		read_buf_pos=start_pos+table_offset;
@@ -690,7 +690,7 @@ Bit16u keyboard_layout::extract_codepage(const char* keyboard_file_name) {
 		Bit16u submap_cp;
 
 		// read codepage of submapping
-		submap_cp=host_readw(&read_buf[start_pos+0x14+sub_map*8]);
+		submap_cp=host_readw(&read_buf[start_pos+0x14+(sub_map<<3)]);
 
 		if (submap_cp!=0) return submap_cp;
 	}
@@ -926,12 +926,12 @@ Bitu keyboard_layout::read_codepage_file(const char* codepage_file_name, Bit32s 
 				} else if (font_height==0x08) {
 					// 8x8 fonts
 					PhysPt font8pt=Real2Phys(int10.rom.font_8_first);
-					for (Bitu i=0;i<128*8;i++) {
+					for (Bitu i=0;i<128<<3;i++) {
 						phys_writeb(font8pt+i,cpi_buf[font_data_start+i]);
 					}
 					font8pt=Real2Phys(int10.rom.font_8_second);
-					for (Bitu i=0;i<128*8;i++) {
-						phys_writeb(font8pt+i,cpi_buf[font_data_start+i+128*8]);
+					for (Bitu i=0;i<128<<3;i++) {
+						phys_writeb(font8pt+i,cpi_buf[font_data_start+i+(128<<3)]);
 					}
 					font_changed=true;
 				}

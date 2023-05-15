@@ -295,11 +295,11 @@ public:
 	void Get_SSx_ESPx(Bitu level,Bitu & _ss,Bitu & _esp) {
 		cpu.mpl=0;
 		if (is386) {
-			PhysPt where=base+offsetof(TSS_32,esp0)+level*8;
+			PhysPt where=base+offsetof(TSS_32,esp0)+level<<3;
 			_esp=mem_readd(where);
 			_ss=mem_readw(where+4);
 		} else {
-			PhysPt where=base+offsetof(TSS_16,sp0)+level*4;
+			PhysPt where=base+offsetof(TSS_16,sp0)+level<<2;
 			_esp=mem_readw(where);
 			_ss=mem_readw(where+2);
 		}

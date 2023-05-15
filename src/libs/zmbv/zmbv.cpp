@@ -157,8 +157,8 @@ INLINE int VideoCodec::PossibleBlock(int vx,int vy,FrameBlock * block) {
 			test |= -test;
 			ret-=(test>>31);
 		}
-		pold+=pitch*4;
-		pnew+=pitch*4;
+		pold+=pitch<<2;
+		pnew+=pitch<<2;
 	}
 	return ret;
 }
@@ -295,9 +295,9 @@ bool VideoCodec::PrepareCompressFrame(int flags,  zmbv_format_t _format, char * 
 				memset(&palette,0, sizeof(palette));
 			/* keyframes get the full palette */
 			for (i=0;i<palsize;i++) {
-				work[workUsed++] = palette[i*4+0];
-				work[workUsed++] = palette[i*4+1];
-				work[workUsed++] = palette[i*4+2];
+				work[workUsed++] = palette[(i<<2)+0];
+				work[workUsed++] = palette[(i<<2)+1];
+				work[workUsed++] = palette[(i<<2)+2];
 			}
 		}
 		/* Restart deflate */
@@ -306,9 +306,9 @@ bool VideoCodec::PrepareCompressFrame(int flags,  zmbv_format_t _format, char * 
 		if (palsize && pal && memcmp(pal, palette, palsize * 4)) {
 			*firstByte |= Mask_DeltaPalette;
 			for(i=0;i<palsize;i++) {
-				work[workUsed++]=palette[i*4+0] ^ pal[i*4+0];
-				work[workUsed++]=palette[i*4+1] ^ pal[i*4+1];
-				work[workUsed++]=palette[i*4+2] ^ pal[i*4+2];
+				work[workUsed++]=palette[(i<<2)+0] ^ pal[(i<<2)+0];
+				work[workUsed++]=palette[(i<<2)+1] ^ pal[(i<<2)+1];
+				work[workUsed++]=palette[(i<<2)+2] ^ pal[(i<<2)+2];
 			}
 			memcpy(&palette,pal, palsize * 4);
 		}
@@ -438,9 +438,9 @@ bool VideoCodec::DecompressFrame(void * framedata, int size) {
 	if (tag & Mask_KeyFrame) {
 		if (palsize) {
 			for (i=0;i<palsize;i++) {
-				palette[i*4+0] = work[workPos++];
-				palette[i*4+1] = work[workPos++];
-				palette[i*4+2] = work[workPos++];
+				palette[(i<<2)+0] = work[workPos++];
+				palette[(i<<2)+1] = work[workPos++];
+				palette[(i<<2)+2] = work[workPos++];
 			}
 		}
 		newframe = buf1;
@@ -457,9 +457,9 @@ bool VideoCodec::DecompressFrame(void * framedata, int size) {
 		newframe = data;
 		if (tag & Mask_DeltaPalette) {
 			for (i=0;i<palsize;i++) {
-				palette[i*4+0] ^= work[workPos++];
-				palette[i*4+1] ^= work[workPos++];
-				palette[i*4+2] ^= work[workPos++];
+				palette[(i<<2)+0] ^= work[workPos++];
+				palette[(i<<2)+1] ^= work[workPos++];
+				palette[(i<<2)+2] ^= work[workPos++];
 			}
 		}
 		switch (format) {
@@ -490,9 +490,9 @@ void VideoCodec::Output_UpsideDown_24(void *output) {
 		case ZMBV_FORMAT_8BPP:
 			for (int j=0;j<width;j++) {
 				int c=r[j];
-				*w++=palette[c*4+2];
-				*w++=palette[c*4+1];
-				*w++=palette[c*4+0];
+				*w++=palette[(c<<2)+2];
+				*w++=palette[(c<<2)+1];
+				*w++=palette[(c<<2)+0];
 			}
 			break;
 		case ZMBV_FORMAT_15BPP:
@@ -513,9 +513,9 @@ void VideoCodec::Output_UpsideDown_24(void *output) {
 			break;
 		case ZMBV_FORMAT_32BPP:
 			for (int j=0;j<width;j++) {
-				*w++ = r[j*4+0];
-				*w++ = r[j*4+1];
-				*w++ = r[j*4+2];
+				*w++ = r[(j<<2)+0];
+				*w++ = r[(j<<2)+1];
+				*w++ = r[(j<<2)+2];
 			}
 			break;
 		}

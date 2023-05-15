@@ -310,7 +310,7 @@ public:
 		cmos.regs[0x15]=(Bit8u)0x80;
 		cmos.regs[0x16]=(Bit8u)0x02;
 		/* Fill in extended memory size */
-		Bitu exsize=(MEM_TotalPages()*4)-1024;
+		Bitu exsize=(MEM_TotalPages()<<2)-1024;
 		cmos.regs[0x17]=(Bit8u)exsize;
 		cmos.regs[0x18]=(Bit8u)(exsize >> 8);
 		cmos.regs[0x30]=(Bit8u)exsize;
