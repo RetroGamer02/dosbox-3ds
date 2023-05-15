@@ -451,19 +451,19 @@ static void FinishSetMode(bool clearmem) {
 				// PCJR cannot access the full 32k at 0xb800
 				for (Bit16u ct=0;ct<16*1024;ct++) {
 					// 0x1800 is the last 32k block in 128k, as set in the CRTCPU_PAGE register 
-					real_writew(0x1800,ct<<1,0x0000);
+					real_writew(0x1800,ct*2,0x0000);
 				}
 				break;
 			}
 			// fall-through
 		case M_CGA2:
 			for (Bit16u ct=0;ct<16*1024;ct++) {
-				real_writew( 0xb800,ct<<1,0x0000);
+				real_writew( 0xb800,ct*2,0x0000);
 			}
 			break;
 		case M_TEXT: {
 			Bit16u seg = (CurMode->mode==7)?0xb000:0xb800;
-			for (Bit16u ct=0;ct<16*1024;ct++) real_writew(seg,ct<<1,0x0720);
+			for (Bit16u ct=0;ct<16*1024;ct++) real_writew(seg,ct*2,0x0720);
 			break;
 		}
 		case M_EGA:	
@@ -559,7 +559,7 @@ bool INT10_SetVideoMode_OTHER(Bit16u mode,bool clearmem) {
 	//Vertical displayed
 	IO_WriteW(crtc_base,0x06 | (CurMode->vdispend) << 8);
 	//Vertical sync position
-	IO_WriteW(crtc_base,0x07 | (CurMode->vdispend + ((CurMode->vtotal - CurMode->vdispend)>>1)-1) << 8);
+	IO_WriteW(crtc_base,0x07 | (CurMode->vdispend + ((CurMode->vtotal - CurMode->vdispend)/2)-1) << 8);
 	//Maximum scanline
 	Bit8u scanline,crtpage;
 	scanline=8;
@@ -998,17 +998,17 @@ bool INT10_SetVideoMode(Bit16u mode) {
 	Bitu offset;
 	switch (CurMode->type) {
 	case M_LIN8:
-		offset = CurMode->swidth>>3;
+		offset = CurMode->swidth/8;
 		break;
 	case M_LIN15:
 	case M_LIN16:
-		offset = 2 * CurMode->swidth>>3;
+		offset = 2 * CurMode->swidth/8;
 		break;
 	case M_LIN32:
-		offset = 4 * CurMode->swidth>>3;
+		offset = 4 * CurMode->swidth/8;
 		break;
 	default:
-		offset = CurMode->hdispend>>1;
+		offset = CurMode->hdispend/2;
 	}
 	IO_Write(crtc_base,0x13);
 	IO_Write(crtc_base + 1,offset & 0xff);
@@ -1489,15 +1489,15 @@ Bitu VideoModeMemSize(Bitu mode) {
 
 	switch(vmodeBlock->type) {
 	case M_LIN4:
-		return vmodeBlock->swidth*vmodeBlock->sheight>>1;
+		return vmodeBlock->swidth*vmodeBlock->sheight/2;
 	case M_LIN8:
 		return vmodeBlock->swidth*vmodeBlock->sheight;
 	case M_LIN15: case M_LIN16:
-		return vmodeBlock->swidth*vmodeBlock->sheight<<1;
+		return vmodeBlock->swidth*vmodeBlock->sheight*2;
 	case M_LIN32:
 		return vmodeBlock->swidth*vmodeBlock->sheight*4;
 	case M_TEXT:
-		return vmodeBlock->twidth*vmodeBlock->theight<<1;
+		return vmodeBlock->twidth*vmodeBlock->theight*2;
 	}
 	// Return 0 for all other types, those always fit in memory
 	return 0;

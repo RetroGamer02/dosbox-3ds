@@ -54,10 +54,10 @@ class PageDirectory;
 #define PFLAG_HASCODE16		0x40			//Page contains 16-bit dynamic code
 #define PFLAG_HASCODE		(PFLAG_HASCODE32|PFLAG_HASCODE16)
 
-#define LINK_START	((1024+64)>>2)			//Start right after the HMA
+#define LINK_START	((1024+64)/4)			//Start right after the HMA
 
 //Allow 128 mb of memory to be linked
-#define PAGING_LINKS (128*1024>>2)
+#define PAGING_LINKS (128*1024/4)
 
 class PageHandler {
 public:

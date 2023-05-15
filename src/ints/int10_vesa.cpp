@@ -148,8 +148,8 @@ foundit:
 	VideoModeBlock * mblock=&ModeList_VGA[i];
 	switch (mblock->type) {
 	case M_LIN4:
-		pageSize = mblock->sheight * mblock->swidth>>3;
-		var_write(&minfo.BytesPerScanLine,mblock->swidth>>3);
+		pageSize = mblock->sheight * mblock->swidth/8;
+		var_write(&minfo.BytesPerScanLine,mblock->swidth/8);
 		var_write(&minfo.NumberOfPlanes,0x4);
 		var_write(&minfo.BitsPerPixel,4);
 		var_write(&minfo.MemoryModel,3);	//ega planar mode
@@ -165,8 +165,8 @@ foundit:
 		if (!int10.vesa_nolfb) modeAttributes |= 0x80;	// linear framebuffer
 		break;
 	case M_LIN15:
-		pageSize = mblock->sheight * mblock->swidth<<1;
-		var_write(&minfo.BytesPerScanLine,mblock->swidth<<1);
+		pageSize = mblock->sheight * mblock->swidth*2;
+		var_write(&minfo.BytesPerScanLine,mblock->swidth*2);
 		var_write(&minfo.NumberOfPlanes,0x1);
 		var_write(&minfo.BitsPerPixel,15);
 		var_write(&minfo.MemoryModel,6);	//HiColour
@@ -182,8 +182,8 @@ foundit:
 		if (!int10.vesa_nolfb) modeAttributes |= 0x80;	// linear framebuffer
 		break;
 	case M_LIN16:
-		pageSize = mblock->sheight * (mblock->swidth<<1);
-		var_write(&minfo.BytesPerScanLine,mblock->swidth<<1);
+		pageSize = mblock->sheight * mblock->swidth*2;
+		var_write(&minfo.BytesPerScanLine,mblock->swidth*2);
 		var_write(&minfo.NumberOfPlanes,0x1);
 		var_write(&minfo.BitsPerPixel,16);
 		var_write(&minfo.MemoryModel,6);	//HiColour
@@ -197,8 +197,8 @@ foundit:
 		if (!int10.vesa_nolfb) modeAttributes |= 0x80;	// linear framebuffer
 		break;
 	case M_LIN32:
-		pageSize = mblock->sheight * mblock->swidth<<2;
-		var_write(&minfo.BytesPerScanLine,mblock->swidth<<2);
+		pageSize = mblock->sheight * mblock->swidth*4;
+		var_write(&minfo.BytesPerScanLine,mblock->swidth*4);
 		var_write(&minfo.NumberOfPlanes,0x1);
 		var_write(&minfo.BitsPerPixel,32);
 		var_write(&minfo.MemoryModel,6);	//HiColour

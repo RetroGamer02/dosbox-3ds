@@ -690,18 +690,18 @@ void SHELL_Init() {
 
 	/* Now call up the shell for the first time */
 	Bit16u psp_seg=DOS_FIRST_SHELL;
-	Bit16u env_seg=DOS_FIRST_SHELL+19; //DOS_GetMemory(1+(4096>>4))+1;
-	Bit16u stack_seg=DOS_GetMemory(2048>>4);
+	Bit16u env_seg=DOS_FIRST_SHELL+19; //DOS_GetMemory(1+(4096/16))+1;
+	Bit16u stack_seg=DOS_GetMemory(2048/16);
 	SegSet16(ss,stack_seg);
 	reg_sp=2046;
 
 	/* Set up int 24 and psp (Telarium games) */
 	real_writeb(psp_seg+16+1,0,0xea);		/* far jmp */
-	real_writed(psp_seg+16+1,1,real_readd(0,0x24<<2));
-	real_writed(0,0x24<<2,((Bit32u)psp_seg<<16) | ((16+1)<<4));
+	real_writed(psp_seg+16+1,1,real_readd(0,0x24*4));
+	real_writed(0,0x24*4,((Bit32u)psp_seg<<16) | ((16+1)<<4));
 
 	/* Set up int 23 to "int 20" in the psp. Fixes what.exe */
-	real_writed(0,0x23<<2,((Bit32u)psp_seg<<16));
+	real_writed(0,0x23*4,((Bit32u)psp_seg<<16));
 
 	/* Set up int 2e handler */
 	Bitu call_int2e=CALLBACK_Allocate();

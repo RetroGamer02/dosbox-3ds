@@ -345,7 +345,7 @@ void CDROM_Interface_Image::CDAudioCallBack(Bitu len)
 	if (player.ctrlUsed) {
 		Bit16s sample0,sample1;
 		Bit16s * samples=(Bit16s *)&player.buffer;
-		for (Bitu pos=0;pos<len>>2;pos++) {
+		for (Bitu pos=0;pos<len/4;pos++) {
 #if defined(WORDS_BIGENDIAN)
 			sample0=(Bit16s)host_readw((HostPt)&samples[pos*2+player.ctrlData.out[0]]);
 			sample1=(Bit16s)host_readw((HostPt)&samples[pos*2+player.ctrlData.out[1]]);
@@ -357,11 +357,11 @@ void CDROM_Interface_Image::CDAudioCallBack(Bitu len)
 			samples[pos*2+1]=(Bit16s)(sample1*player.ctrlData.vol[1]/255.0);
 		}
 #if defined(WORDS_BIGENDIAN)
-		player.channel->AddSamples_s16(len>>2,(Bit16s *)player.buffer);
-	} else	player.channel->AddSamples_s16_nonnative(len>>2,(Bit16s *)player.buffer);
+		player.channel->AddSamples_s16(len/4,(Bit16s *)player.buffer);
+	} else	player.channel->AddSamples_s16_nonnative(len/4,(Bit16s *)player.buffer);
 #else
 	}
-	player.channel->AddSamples_s16(len>>2,(Bit16s *)player.buffer);
+	player.channel->AddSamples_s16(len/4,(Bit16s *)player.buffer);
 #endif
 	memmove(player.buffer, &player.buffer[len], player.bufLen - len);
 	player.bufLen -= len;

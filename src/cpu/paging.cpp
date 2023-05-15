@@ -181,7 +181,7 @@ static INLINE void InitPageCheckPresence(PhysPt lin_addr,bool writing,X86PageEnt
 	Bitu lin_page=lin_addr >> 12;
 	Bitu d_index=lin_page >> 10;
 	Bitu t_index=lin_page & 0x3ff;
-	Bitu table_addr=(paging.base.page<<12)+(d_index<<2);
+	Bitu table_addr=(paging.base.page<<12)+d_index*4;
 	table.load=phys_readd(table_addr);
 	if (!table.block.p) {
 		LOG(LOG_PAGING,LOG_NORMAL)("NP Table");
@@ -191,7 +191,7 @@ static INLINE void InitPageCheckPresence(PhysPt lin_addr,bool writing,X86PageEnt
 		if (GCC_UNLIKELY(!table.block.p))
 			E_Exit("Pagefault didn't correct table");
 	}
-	Bitu entry_addr=(table.block.base<<12)+(t_index<<2);
+	Bitu entry_addr=(table.block.base<<12)+t_index*4;
 	entry.load=phys_readd(entry_addr);
 	if (!entry.block.p) {
 //		LOG(LOG_PAGING,LOG_NORMAL)("NP Page");
@@ -207,7 +207,7 @@ static INLINE bool InitPageCheckPresence_CheckOnly(PhysPt lin_addr,bool writing,
 	Bitu lin_page=lin_addr >> 12;
 	Bitu d_index=lin_page >> 10;
 	Bitu t_index=lin_page & 0x3ff;
-	Bitu table_addr=(paging.base.page<<12)+(d_index<<2);
+	Bitu table_addr=(paging.base.page<<12)+d_index*4;
 	table.load=phys_readd(table_addr);
 	if (!table.block.p) {
 		paging.cr2=lin_addr;
@@ -215,7 +215,7 @@ static INLINE bool InitPageCheckPresence_CheckOnly(PhysPt lin_addr,bool writing,
 		cpu.exception.error=(writing?0x02:0x00) | (((cpu.cpl&cpu.mpl)==0)?0x00:0x04);
 		return false;
 	}
-	Bitu entry_addr=(table.block.base<<12)+(t_index<<2);
+	Bitu entry_addr=(table.block.base<<12)+t_index*4;
 	entry.load=phys_readd(entry_addr);
 	if (!entry.block.p) {
 		paging.cr2=lin_addr;
@@ -370,13 +370,13 @@ public:
 			if (priv_check==3) {
 				LOG(LOG_PAGING,LOG_NORMAL)("Page access denied: cpl=%i, %x:%x:%x:%x",
 					cpu.cpl,entry.block.us,table.block.us,entry.block.wr,table.block.wr);
-				PAGING_PageFault(lin_addr,(table.block.base<<12)+(lin_page & 0x3ff)<<2,0x05 | (writing?0x02:0x00));
+				PAGING_PageFault(lin_addr,(table.block.base<<12)+(lin_page & 0x3ff)*4,0x05 | (writing?0x02:0x00));
 				priv_check=0;
 			}
 
 			if (!table.block.a) {
 				table.block.a=1;		// set page table accessed
-				phys_writed((paging.base.page<<12)+(lin_page >> 10)<<2,table.load);
+				phys_writed((paging.base.page<<12)+(lin_page >> 10)*4,table.load);
 			}
 			if ((!entry.block.a) || (!entry.block.d)) {
 				entry.block.a=1;		// set page accessed
@@ -385,7 +385,7 @@ public:
 				// page will be fully linked so we can't track later writes
 				if (writing || (priv_check==0)) entry.block.d=1;		// mark page as dirty
 
-				phys_writed((table.block.base<<12)+(lin_page & 0x3ff)<<2,entry.load);
+				phys_writed((table.block.base<<12)+(lin_page & 0x3ff)*4,entry.load);
 			}
 
 			phys_page=entry.block.base;
@@ -455,11 +455,11 @@ public:
 
 			if (!table.block.a) {
 				table.block.a=1;		//Set access
-				phys_writed((paging.base.page<<12)+((lin_page >> 10)<<2),table.load);
+				phys_writed((paging.base.page<<12)+(lin_page >> 10)*4,table.load);
 			}
 			if (!entry.block.a) {
 				entry.block.a=1;					//Set access
-				phys_writed((table.block.base<<12)+((lin_page & 0x3ff)<<2),entry.load);
+				phys_writed((table.block.base<<12)+(lin_page & 0x3ff)*4,entry.load);
 			}
 			phys_page=entry.block.base;
 			// maybe use read-only page here if possible
@@ -533,16 +533,16 @@ public:
 
 			LOG(LOG_PAGING,LOG_NORMAL)("Page access denied: cpl=%i, %x:%x:%x:%x",
 				cpu.cpl,entry.block.us,table.block.us,entry.block.wr,table.block.wr);
-			PAGING_PageFault(lin_addr,(table.block.base<<12)+((lin_page & 0x3ff)<<2),0x07);
+			PAGING_PageFault(lin_addr,(table.block.base<<12)+(lin_page & 0x3ff)*4,0x07);
 
 			if (!table.block.a) {
 				table.block.a=1;		//Set access
-				phys_writed((paging.base.page<<12)+((lin_page >> 10)<<2),table.load);
+				phys_writed((paging.base.page<<12)+(lin_page >> 10)*4,table.load);
 			}
 			if ((!entry.block.a) || (!entry.block.d)) {
 				entry.block.a=1;	//Set access
 				entry.block.d=1;	//Set dirty
-				phys_writed((table.block.base<<12)+((lin_page & 0x3ff)<<2),entry.load);
+				phys_writed((table.block.base<<12)+(lin_page & 0x3ff)*4,entry.load);
 			}
 			phys_page=entry.block.base;
 			PAGING_LinkPage(lin_page,phys_page);
@@ -588,11 +588,11 @@ public:
 
 			if (!table.block.a) {
 				table.block.a=1;		//Set access
-				phys_writed((paging.base.page<<12)+((lin_page >> 10)<<2),table.load);
+				phys_writed((paging.base.page<<12)+(lin_page >> 10)*4,table.load);
 			}
 			if (!entry.block.a) {
 				entry.block.a=1;	//Set access
-				phys_writed((table.block.base<<12)+((lin_page & 0x3ff)<<2),entry.load);
+				phys_writed((table.block.base<<12)+(lin_page & 0x3ff)*4,entry.load);
 			}
 			phys_page=entry.block.base;
 		} else {
@@ -609,10 +609,10 @@ bool PAGING_MakePhysPage(Bitu & page) {
 		Bitu d_index=page >> 10;
 		Bitu t_index=page & 0x3ff;
 		X86PageEntry table;
-		table.load=phys_readd((paging.base.page<<12)+(d_index<<2));
+		table.load=phys_readd((paging.base.page<<12)+d_index*4);
 		if (!table.block.p) return false;
 		X86PageEntry entry;
-		entry.load=phys_readd((table.block.base<<12)+(t_index<<2));
+		entry.load=phys_readd((table.block.base<<12)+t_index*4);
 		if (!entry.block.p) return false;
 		page=entry.block.base;
 	} else {

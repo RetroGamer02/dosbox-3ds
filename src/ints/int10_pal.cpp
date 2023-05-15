@@ -59,7 +59,7 @@ void INT10_SetSinglePaletteRegister(Bit8u reg,Bit8u val) {
 				if (reg > 3) break;
 				if (reg != 0) { // 0 is assumed to be at 0
 					Bit8u color_select=real_readb(BIOSMEM_SEG,BIOSMEM_CURRENT_PAL);
-					reg = (reg<<1)+8; // Green Red Brown
+					reg = reg*2+8; // Green Red Brown
 					if (color_select& 0x20) reg++; // Cyan Magenta White
 				}
 				WriteTandyACTL(reg+0x10,val);

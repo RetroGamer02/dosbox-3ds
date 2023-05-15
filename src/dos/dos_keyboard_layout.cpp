@@ -354,7 +354,7 @@ Bitu keyboard_layout::read_keyboard_file(const char* keyboard_file_name, Bit32s 
 	if (additional_planes>(layout_pages-4)) additional_planes=(layout_pages-4);
 
 	// seek to plane descriptor
-	read_buf_pos=start_pos+0x14+(submappings<<3);
+	read_buf_pos=start_pos+0x14+submappings*8;
 	for (Bit16u cplane=0; cplane<additional_planes; cplane++) {
 		Bit16u plane_flags;
 
@@ -387,14 +387,14 @@ Bitu keyboard_layout::read_keyboard_file(const char* keyboard_file_name, Bit32s 
 		if ((sub_map!=0) && (specific_layout!=-1)) sub_map=(Bit16u)(specific_layout&0xffff);
 
 		// read codepage of submapping
-		submap_cp=host_readw(&read_buf[start_pos+0x14+(sub_map<<3)]);
+		submap_cp=host_readw(&read_buf[start_pos+0x14+sub_map*8]);
 		if ((submap_cp!=0) && (submap_cp!=requested_codepage) && (specific_layout==-1))
 			continue;		// skip nonfitting submappings
 
 		if (submap_cp==requested_codepage) found_matching_layout=true;
 
 		// get table offset
-		table_offset=host_readw(&read_buf[start_pos+0x18+(sub_map<<3)]);
+		table_offset=host_readw(&read_buf[start_pos+0x18+sub_map*8]);
 		diacritics_entries=0;
 		if (table_offset!=0) {
 			// process table
@@ -402,7 +402,7 @@ Bitu keyboard_layout::read_keyboard_file(const char* keyboard_file_name, Bit32s 
 			for (i=0; i<2048;) {
 				if (read_buf[start_pos+table_offset+i]==0) break;	// end of table
 				diacritics_entries++;
-				i+=(read_buf[start_pos+table_offset+i+1]<<1)+2;
+				i+=read_buf[start_pos+table_offset+i+1]*2+2;
 			}
 			// copy diacritics table
 			for (j=0; j<=i; j++) diacritics[j]=read_buf[start_pos+table_offset+j];
@@ -410,7 +410,7 @@ Bitu keyboard_layout::read_keyboard_file(const char* keyboard_file_name, Bit32s 
 
 
 		// get table offset
-		table_offset=host_readw(&read_buf[start_pos+0x16+(sub_map<<3)]);
+		table_offset=host_readw(&read_buf[start_pos+0x16+sub_map*8]);
 		if (table_offset==0) continue;	// non-present table
 
 		read_buf_pos=start_pos+table_offset;
@@ -544,7 +544,7 @@ bool keyboard_layout::layout_key(Bitu key, Bit8u flags1, Bit8u flags2, Bit8u fla
 				Bit16u diacritics_start=0;
 				// search start of subtable
 				for (Bit16u i=0; i<diacritics_character-200; i++)
-					diacritics_start+=(diacritics[diacritics_start+1]<<1)+2;
+					diacritics_start+=diacritics[diacritics_start+1]*2+2;
 
 				BIOS_AddKeyToBuffer((Bit16u)(key<<8) | diacritics[diacritics_start]);
 				diacritics_character=0;
@@ -584,7 +584,7 @@ bool keyboard_layout::map_key(Bitu key, Bit16u layouted_key, bool is_command, bo
 				Bit16u diacritics_start=0;
 				// search start of subtable
 				for (Bit16u i=0; i<diacritics_character-200; i++)
-					diacritics_start+=(diacritics[diacritics_start+1]<<1)+2;
+					diacritics_start+=diacritics[diacritics_start+1]*2+2;
 
 				Bit8u diacritics_length=diacritics[diacritics_start+1];
 				diacritics_start+=2;
@@ -592,7 +592,7 @@ bool keyboard_layout::map_key(Bitu key, Bit16u layouted_key, bool is_command, bo
 
 				// search scancode
 				for (Bit16u i=0; i<diacritics_length; i++) {
-					if (diacritics[(diacritics_start+i)<<1]==(layouted_key&0xff)) {
+					if (diacritics[diacritics_start+i*2]==(layouted_key&0xff)) {
 						// add diacritics to keybuf
 						BIOS_AddKeyToBuffer((Bit16u)(key<<8) | diacritics[diacritics_start+i*2+1]);
 						return true;
@@ -690,7 +690,7 @@ Bit16u keyboard_layout::extract_codepage(const char* keyboard_file_name) {
 		Bit16u submap_cp;
 
 		// read codepage of submapping
-		submap_cp=host_readw(&read_buf[start_pos+0x14+(sub_map<<3)]);
+		submap_cp=host_readw(&read_buf[start_pos+0x14+sub_map*8]);
 
 		if (submap_cp!=0) return submap_cp;
 	}
@@ -926,12 +926,12 @@ Bitu keyboard_layout::read_codepage_file(const char* codepage_file_name, Bit32s 
 				} else if (font_height==0x08) {
 					// 8x8 fonts
 					PhysPt font8pt=Real2Phys(int10.rom.font_8_first);
-					for (Bitu i=0;i<128<<3;i++) {
+					for (Bitu i=0;i<128*8;i++) {
 						phys_writeb(font8pt+i,cpi_buf[font_data_start+i]);
 					}
 					font8pt=Real2Phys(int10.rom.font_8_second);
-					for (Bitu i=0;i<128<<3;i++) {
-						phys_writeb(font8pt+i,cpi_buf[font_data_start+i+(128<<3)]);
+					for (Bitu i=0;i<128*8;i++) {
+						phys_writeb(font8pt+i,cpi_buf[font_data_start+i+128*8]);
 					}
 					font_changed=true;
 				}

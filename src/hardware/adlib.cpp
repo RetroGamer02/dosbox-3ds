@@ -637,7 +637,7 @@ void Module::PortWrite( Bitu port, Bitu val, Bitu /*iolen*/ ) {
 
 Bitu Module::PortRead( Bitu port, Bitu /*iolen*/ ) {
 	//roughly half a micro (as we already do 1 micro on each port read and some tests revealed it taking 1.5 micros to read an adlib port)
-	Bits delaycyc = (CPU_CycleMax>>11); 
+	Bits delaycyc = (CPU_CycleMax/2048); 
 	if(GCC_UNLIKELY(delaycyc > CPU_Cycles)) delaycyc = CPU_Cycles;
 	CPU_Cycles -= delaycyc;
 	CPU_IODelayRemoved += delaycyc;

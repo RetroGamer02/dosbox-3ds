@@ -56,7 +56,7 @@ typedef int8_t		Bit8s;
 #define NUM_CHANNELS	9
 #endif
 
-#define MAXOPERATORS	(NUM_CHANNELS<<1)
+#define MAXOPERATORS	(NUM_CHANNELS*2)
 
 
 #define FL05	((fltype)0.5)

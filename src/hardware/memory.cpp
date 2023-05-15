@@ -35,7 +35,7 @@
 #define MAX_MEMORY	64
 #define MAX_MEMORY_O3DS_DYN	5
 #define MAX_MEMORY_O3DS_NOR	11
-#define MAX_PAGE_ENTRIES ((MAX_MEMORY*1024*1024)>>12)
+#define MAX_PAGE_ENTRIES (MAX_MEMORY*1024*1024/4096)
 #define LFB_PAGES	512
 #define MAX_LINKS	((MAX_MEMORY*1024/4)+4096)		//Hopefully enough
 
@@ -143,8 +143,8 @@ PageHandler * MEM_GetPageHandler(Bitu phys_page) {
 		return memory.phandlers[phys_page];
 	} else if ((phys_page>=memory.lfb.start_page) && (phys_page<memory.lfb.end_page)) {
 		return memory.lfb.handler;
-	} else if ((phys_page>=memory.lfb.start_page+0x01000000>>12) &&
-				(phys_page<memory.lfb.start_page+(0x01000000>>12)+16)) {
+	} else if ((phys_page>=memory.lfb.start_page+0x01000000/4096) &&
+				(phys_page<memory.lfb.start_page+0x01000000/4096+16)) {
 		return memory.lfb.mmiohandler;
 	}
 	return &illegal_page_handler;

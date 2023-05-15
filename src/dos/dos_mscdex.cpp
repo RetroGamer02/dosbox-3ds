@@ -320,7 +320,7 @@ int CMscdex::AddDrive(Bit16u _drive, char* physicalPath, Bit8u& subUnit)
 		Bit16u driverSize = sizeof(DOS_DeviceHeader::sDeviceHeader) + 10; // 10 = Bytes for 3 callbacks
 		
 		// Create Device Header
-		Bit16u seg = DOS_GetMemory((driverSize>>4)+((driverSize%16)>0));
+		Bit16u seg = DOS_GetMemory(driverSize/16+((driverSize%16)>0));
 		DOS_DeviceHeader devHeader(PhysMake(seg,0));
 		devHeader.SetNextDeviceHeader	(0xFFFFFFFF);
 		devHeader.SetAttribute(0xc800);
@@ -416,7 +416,7 @@ void CMscdex::ReplaceDrive(CDROM_Interface* newCdrom, Bit8u subUnit) {
 
 PhysPt CMscdex::GetDefaultBuffer(void) {
 	if (defaultBufSeg==0) {
-		Bit16u size = ((2352<<1)+15)>>4;
+		Bit16u size = (2352*2+15)/16;
 		defaultBufSeg = DOS_GetMemory(size);
 	};
 	return PhysMake(defaultBufSeg,2352);
@@ -424,7 +424,7 @@ PhysPt CMscdex::GetDefaultBuffer(void) {
 
 PhysPt CMscdex::GetTempBuffer(void) {
 	if (defaultBufSeg==0) {
-		Bit16u size = ((2352<<1)+15)>>4;
+		Bit16u size = (2352*2+15)/16;
 		defaultBufSeg = DOS_GetMemory(size);
 	};
 	return PhysMake(defaultBufSeg,0);
@@ -928,8 +928,8 @@ static Bit16u MSCDEX_IOCTL_Input(PhysPt buffer,Bit8u drive_unit) {
 					TCtrl ctrl;
 					if (!mscdex->GetChannelControl(drive_unit,ctrl)) return 0x01;
 					for (Bit8u chan=0;chan<4;chan++) {
-						mem_writeb((buffer+chan<<1)+1,ctrl.out[chan]);
-						mem_writeb((buffer+chan<<1)+2,ctrl.vol[chan]);
+						mem_writeb(buffer+chan*2+1,ctrl.out[chan]);
+						mem_writeb(buffer+chan*2+2,ctrl.vol[chan]);
 					}
 					break;
 		case 0x06 : /* Get Device status */
@@ -1025,8 +1025,8 @@ static Bit16u MSCDEX_IOCTL_Optput(PhysPt buffer,Bit8u drive_unit) {
 		case 0x03: //Audio Channel control
 					TCtrl ctrl;
 					for (Bit8u chan=0;chan<4;chan++) {
-						ctrl.out[chan]=mem_readb((buffer+chan<<1)+1);
-						ctrl.vol[chan]=mem_readb((buffer+chan<<1)+2);
+						ctrl.out[chan]=mem_readb(buffer+chan*2+1);
+						ctrl.vol[chan]=mem_readb(buffer+chan*2+2);
 					}
 					if (!mscdex->ChannelControl(drive_unit,ctrl)) return 0x01;
 					break;

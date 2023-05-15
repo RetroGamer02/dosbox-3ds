@@ -254,7 +254,7 @@ static Bit8u * VGA_Draw_VGA_Line_HWMouse( Bitu vidstart, Bitu /*line*/) {
 		// AB bits corresponding to a cursor pixel. The whole map is 8kB in size.
 		memcpy(TempLine, &vga.mem.linear[ vidstart ], vga.draw.width);
 		// the index of the bit inside the cursor bitmap we start at:
-		Bitu sourceStartBit = ((lineat - vga.s3.hgc.originy) + vga.s3.hgc.posy)*64 + vga.s3.hgc.posx; 
+		Bitu sourceStartBit = (((lineat - vga.s3.hgc.originy) + vga.s3.hgc.posy)<<6) + vga.s3.hgc.posx; 
 		// convert to video memory addr and bit index
 		// start adjusted to the pattern structure (thus shift address by 2 instead of 3)
 		// Need to get rid of the third bit, so "/8 *2" becomes ">> 2 & ~1"
@@ -297,7 +297,7 @@ static Bit8u * VGA_Draw_LIN16_Line_HWMouse(Bitu vidstart, Bitu /*line*/) {
 		return &vga.mem.linear[vidstart];
 	} else {
 		memcpy(TempLine, &vga.mem.linear[ vidstart ], vga.draw.width<<1);
-		Bitu sourceStartBit = ((lineat - vga.s3.hgc.originy) + vga.s3.hgc.posy)*64 + vga.s3.hgc.posx; 
+		Bitu sourceStartBit = (((lineat - vga.s3.hgc.originy) + vga.s3.hgc.posy)<<6) + vga.s3.hgc.posx;  
  		Bitu cursorMemStart = ((sourceStartBit >> 2)& ~1) + (((Bit32u)vga.s3.hgc.startaddr) << 10);
 		Bitu cursorStartBit = sourceStartBit & 0x7;
 		if (cursorMemStart & 0x2) cursorMemStart--;
@@ -339,7 +339,7 @@ static Bit8u * VGA_Draw_LIN32_Line_HWMouse(Bitu vidstart, Bitu /*line*/) {
 		return &vga.mem.linear[ vidstart ];
 	} else {
 		memcpy(TempLine, &vga.mem.linear[ vidstart ], vga.draw.width<<2);
-		Bitu sourceStartBit = ((lineat - vga.s3.hgc.originy) + vga.s3.hgc.posy)*64 + vga.s3.hgc.posx; 
+		Bitu sourceStartBit = (((lineat - vga.s3.hgc.originy) + vga.s3.hgc.posy)<<6) + vga.s3.hgc.posx;
 		Bitu cursorMemStart = ((sourceStartBit >> 2)& ~1) + (((Bit32u)vga.s3.hgc.startaddr) << 10);
 		Bitu cursorStartBit = sourceStartBit & 0x7;
 		if (cursorMemStart & 0x2) cursorMemStart--;
@@ -387,7 +387,7 @@ static Bit8u * VGA_TEXT_Draw_Line(Bitu vidstart, Bitu line) {
 	for (Bitu cx=0;cx<vga.draw.blocks;cx++) {
 		Bitu chr=vidmem[cx<<1];
 		Bitu col=vidmem[(cx<<1)+1];
-		Bitu font=vga.draw.font_tables[(col >> 3)&1][chr*32+line];
+		Bitu font=vga.draw.font_tables[(col >> 3)&1][(chr<<5)+line];
 		Bit32u mask1=TXT_Font_Table[font>>4] & FontMask[col >> 7];
 		Bit32u mask2=TXT_Font_Table[font&0xf] & FontMask[col >> 7];
 		Bit32u fg=TXT_FG_Table[col&0xf];
@@ -436,7 +436,7 @@ static Bit8u * VGA_TEXT_Herc_Draw_Line(Bitu vidstart, Bitu line) {
 			Bit32u mask1, mask2;
 			if (GCC_UNLIKELY(underline)) mask1 = mask2 = FontMask[attrib >> 7];
 			else {
-				Bitu font=vga.draw.font_tables[0][chr*32+line];
+				Bitu font=vga.draw.font_tables[0][(chr<<5)+line];
 				mask1=TXT_Font_Table[font>>4] & FontMask[attrib >> 7]; // blinking
 				mask2=TXT_Font_Table[font&0xf] & FontMask[attrib >> 7];
 			}
@@ -902,8 +902,8 @@ static void VGA_VerticalTimer(Bitu /*val*/) {
 		if (machine==MCH_HERC) vga.draw.linear_mask = 0xfff; // 1 page
 		else if (IS_EGAVGA_ARCH) vga.draw.linear_mask = 0x7fff; // 8 pages
 		else vga.draw.linear_mask = 0x3fff; // CGA, Tandy 4 pages
-		vga.draw.cursor.address=vga.config.cursor_start<<1;
-		vga.draw.address <<= 1;
+		vga.draw.cursor.address=vga.config.cursor_start*2;
+		vga.draw.address *= 2;
 		//vga.draw.cursor.count++; //Moved before the frameskip test.
 		/* check for blinking and blinking change delay */
 		FontMask[1]=(vga.draw.blinking & (vga.draw.cursor.count >> 4)) ?
@@ -915,7 +915,7 @@ static void VGA_VerticalTimer(Bitu /*val*/) {
 		break;
 	case M_HERC_GFX:
 	case M_CGA4:case M_CGA2:
-		vga.draw.address=(vga.draw.address<<1)&0x1fff;
+		vga.draw.address=(vga.draw.address*2)&0x1fff;
 		break;
 	case M_CGA16:
 	case M_TANDY2:case M_TANDY4:case M_TANDY16:
@@ -969,7 +969,7 @@ void VGA_CheckScanLength(void) {
 	switch (vga.mode) {
 	case M_EGA:
 	case M_LIN4:
-		vga.draw.address_add=vga.config.scan_len*16;
+		vga.draw.address_add=vga.config.scan_len<<4;
 		break;
 	case M_VGA:
 	case M_LIN8:
@@ -1005,7 +1005,7 @@ void VGA_CheckScanLength(void) {
 		vga.draw.address_add=vga.draw.blocks;
 		break;
 	default:
-		vga.draw.address_add=vga.draw.blocks<<3;
+		vga.draw.address_add=vga.draw.blocks*8;
 		break;
 	}
 }
@@ -1147,7 +1147,7 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 		if (vga.seq.clocking_mode & 1 ) clock/=8; else clock/=9;
 		/* Check for pixel doubling, master clock/2 */
 		if (vga.seq.clocking_mode & 0x8) {
-			htotal<<=1;
+			htotal*=2;
 		}
 		vga.draw.address_line_total=(vga.crtc.maximum_scan_line&0x1f)+1;
 		if (IS_VGA_ARCH && (svgaCard==SVGA_None) && (vga.mode==M_EGA || vga.mode==M_VGA)) {
@@ -1180,11 +1180,11 @@ void VGA_SetupDrawing(Bitu /*val*/) {
 		switch (machine) {
 		case MCH_CGA:
 		case TANDY_ARCH_CASE:
-			clock=((vga.tandy.mode_control & 1) ? 14318180 : (14318180>>1))>>3;
+			clock=((vga.tandy.mode_control & 1) ? 14318180 : (14318180/2))/8;
 			break;
 		case MCH_HERC:
-			if (vga.herc.mode_control & 0x2) clock=16000000>>4;
-			else clock=16000000>>3;
+			if (vga.herc.mode_control & 0x2) clock=16000000/16;
+			else clock=16000000/8;
 			break;
 		default:
 			clock = 14318180;

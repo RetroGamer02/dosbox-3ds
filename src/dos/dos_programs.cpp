@@ -575,7 +575,7 @@ public:
 
 		Bit16u seg,blocks;blocks=0xffff;
 		DOS_AllocateMemory(&seg,&blocks);
-		WriteOut(MSG_Get("PROGRAM_MEM_CONVEN"),(blocks*16)>>10);
+		WriteOut(MSG_Get("PROGRAM_MEM_CONVEN"),blocks*16/1024);
 
 		if (umb_start!=0xffff) {
 			DOS_LinkUMBsToMemChain(1);
@@ -595,7 +595,7 @@ public:
 			if ((current_umb_flag&1)!=(umb_flag&1)) DOS_LinkUMBsToMemChain(umb_flag);
 			DOS_SetMemAllocStrategy(old_memstrat);	// restore strategy
 
-			if (block_count>0) WriteOut(MSG_Get("PROGRAM_MEM_UPPER"),(total_blocks*16)>>10,block_count,(largest_block*16)>>10);
+			if (block_count>0) WriteOut(MSG_Get("PROGRAM_MEM_UPPER"),total_blocks*16/1024,block_count,largest_block*16/1024);
 		}
 
 		/* Test for and show free XMS */
@@ -982,8 +982,8 @@ public:
 			if (!IS_TANDY_ARCH && floppysize!=0) GetDMAChannel(2)->tcount=true;
 
 			/* revector some dos-allocated interrupts */
-			real_writed(0,0x01<<2,0xf000ff53);
-			real_writed(0,0x03<<2,0xf000ff53);
+			real_writed(0,0x01*4,0xf000ff53);
+			real_writed(0,0x03*4,0xf000ff53);
 
 			SegSet16(cs, 0);
 			reg_ip = 0x7c00;
@@ -1171,7 +1171,7 @@ void LOADFIX::Run(void)
 	}
 	// Allocate Memory
 	Bit16u segment;
-	Bit16u blocks = (kb*1024)>>4;
+	Bit16u blocks = kb*1024/16;
 	if (DOS_AllocateMemory(&segment,&blocks)) {
 		DOS_MCB mcb((Bit16u)(segment-1));
 		mcb.SetPSPSeg(0x40);			// use fake segment
