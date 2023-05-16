@@ -337,7 +337,7 @@ void CPU_Core_Dynrec_Init(void) {
 		CACHE_TOTAL	= (1024*1024*8);
 		CACHE_BLOCKS = (128*1024);
 	} else {
-		CACHE_TOTAL = (1024*1024);
+		CACHE_TOTAL = (1024*1024*2);
 		CACHE_BLOCKS = (32*1024);
 	}
 }
